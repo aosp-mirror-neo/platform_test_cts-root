@@ -16,6 +16,8 @@
 
 package android.packagewatchdog.cts;
 
+import static com.android.server.PackageWatchdog.MITIGATION_RESULT_SUCCESS;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
@@ -293,11 +295,11 @@ public class PackageWatchdogTest {
             return mImpact;
         }
 
-        public boolean onExecuteHealthCheckMitigation(VersionedPackage versionedPackage,
+        public int onExecuteHealthCheckMitigation(VersionedPackage versionedPackage,
                 int failureReason, int mitigationCount) {
             mMitigatedPackages.add(versionedPackage.getPackageName());
             mLatch.countDown();
-            return true;
+            return MITIGATION_RESULT_SUCCESS;
         }
 
         public String getUniqueIdentifier() {
@@ -308,8 +310,8 @@ public class PackageWatchdogTest {
             return mImpact;
         }
 
-        public boolean onExecuteBootLoopMitigation(int level) {
-            return true;
+        public int onExecuteBootLoopMitigation(int level) {
+            return MITIGATION_RESULT_SUCCESS;
         }
 
         public boolean isPersistent() {
