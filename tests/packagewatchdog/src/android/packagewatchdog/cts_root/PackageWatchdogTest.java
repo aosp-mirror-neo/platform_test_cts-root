@@ -270,7 +270,7 @@ public class PackageWatchdogTest {
     private static class TestObserver implements PackageWatchdog.PackageHealthObserver {
         private final String mName;
         private final int mImpact;
-        private boolean mIsPersistent = false;
+        private boolean mIsPersistent = true;
         private boolean mMayObservePackages = false;
         final List<String> mMitigatedPackages = new ArrayList<>();
         final List<String> mHealthCheckFailedPackages = new ArrayList<>();
