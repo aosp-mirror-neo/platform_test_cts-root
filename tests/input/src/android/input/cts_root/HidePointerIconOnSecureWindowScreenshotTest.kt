@@ -20,7 +20,6 @@ import android.cts.input.EventVerifier
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.SystemProperties
-import android.platform.test.annotations.EnableFlags
 import android.view.MotionEvent
 import android.view.WindowManager
 import android.virtualdevice.cts.common.VirtualDeviceRule
@@ -31,10 +30,10 @@ import com.android.cts.input.DefaultPointerSpeedRule
 import com.android.cts.input.TestPointerDevice
 import com.android.cts.input.VirtualDisplayActivityScenario
 import com.android.cts.input.inputeventmatchers.withMotionAction
-import com.android.input.flags.Flags
 import com.android.xts.root.annotations.RequireAdbRoot
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestName
@@ -48,7 +47,6 @@ import platform.test.screenshot.assertAgainstGolden
 import platform.test.screenshot.matchers.AlmostPerfectMatcher
 import platform.test.screenshot.matchers.BitmapMatcher
 import kotlin.test.assertNotNull
-import org.junit.Ignore
 
 /**
  * End-to-end tests for the hiding pointer icons of screenshots of secure displays
@@ -120,7 +118,6 @@ class HidePointerIconOnSecureWindowScreenshotTest {
 
     @Ignore("b/366475909")
     @Test
-    @EnableFlags(Flags.FLAG_HIDE_POINTER_INDICATORS_FOR_SECURE_WINDOWS)
     fun testHidePointerIconOnSecureWindowScreenshot() {
         device.hoverMove(1, 1)
         verifier.assertReceivedMotion(withMotionAction(MotionEvent.ACTION_HOVER_ENTER))
