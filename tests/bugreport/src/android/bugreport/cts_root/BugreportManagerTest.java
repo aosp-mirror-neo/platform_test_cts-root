@@ -48,6 +48,7 @@ import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
 
+import com.android.compatibility.common.util.ShellIdentityUtils;
 import com.android.compatibility.common.util.SystemUtil;
 
 import org.junit.AfterClass;
@@ -76,6 +77,7 @@ public class BugreportManagerTest {
 
     private Context mContext;
     private BugreportManager mBugreportManager;
+    private Method mGetServiceMethod;
 
     @Rule
     public TestName name = new TestName();
@@ -95,8 +97,9 @@ public class BugreportManagerTest {
     public void setup() throws Exception {
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mBugreportManager = mContext.getSystemService(BugreportManager.class);
+        mGetServiceMethod = Class.forName("android.os.ServiceManager").getMethod(
+            "getService", String.class);
         ensureNoConsentDialogShown();
-
 
         // Unlock before finding/clicking an object.
         final UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
@@ -396,6 +399,7 @@ public class BugreportManagerTest {
         mBugreportManager.startBugreport(parcelFd(bugreportFile), null,
                 new BugreportParams(BugreportParams.BUGREPORT_MODE_ONBOARDING, 0),
                 mContext.getMainExecutor(), callback);
+        callback.waitForUiReady();
         if (!skipConsent) {
             shareConsentDialog(ConsentReply.ALLOW);
         }
@@ -507,6 +511,7 @@ public class BugreportManagerTest {
         private boolean mSuccess = false;
         private String mBugreportFile;
         private final Object mLock = new Object();
+        private final CountDownLatch mUiReadyLatch = new CountDownLatch(1);
 
         private final CountDownLatch mLatch;
 
@@ -520,6 +525,20 @@ public class BugreportManagerTest {
                 mErrorCode = errorCode;
                 mLatch.countDown();
             }
+        }
+
+        @Override
+        public void onEarlyReportFinished() {
+            mUiReadyLatch.countDown();
+        }
+
+        /**
+         * Wait for onEarlyReportFinished to be called. If this invocation of
+         * startBugreport requires user consent, the dialog will show then;
+         * otherwise, it won't.
+         */
+        public void waitForUiReady() throws Exception {
+            mUiReadyLatch.await(30, TimeUnit.SECONDS);
         }
 
         @Override
@@ -614,21 +633,30 @@ public class BugreportManagerTest {
 
 
     /** Waits for the dumpstate service to stop, for up to 5 seconds. */
+    private boolean isDumpstateServiceStopped() throws Exception {
+        // If getService() returns null, the service has stopped.
+        return ShellIdentityUtils.invokeMethodWithShellPermissions(mGetServiceMethod, (m) -> {
+            try {
+                return m.invoke(null, "dumpstate");
+            } catch (Exception e) {
+                return null;
+            }
+        }) == null;
+    }
+
     private void waitForDumpstateServiceToStop() throws Exception {
         int pollingIntervalMillis = 100;
-        Method method = Class.forName("android.os.ServiceManager").getMethod(
-                "getService", String.class);
+
         for (int i = 0; i < 10; i++) {
             int numPolls = 50;
             while (numPolls-- > 0) {
-                // If getService() returns null, the service has stopped.
-                if (method.invoke(null, "dumpstate") == null) {
+                if (isDumpstateServiceStopped()) {
                     break;
                 }
                 Thread.sleep(pollingIntervalMillis);
             }
         }
-        if (method.invoke(null, "dumpstate") == null) {
+        if (isDumpstateServiceStopped()) {
             return;
         }
         fail("Dumpstate did not stop within 25 seconds");
