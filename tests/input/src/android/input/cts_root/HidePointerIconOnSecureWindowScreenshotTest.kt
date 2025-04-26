@@ -16,7 +16,6 @@
 
 package android.input.cts_root
 
-import android.cts.input.EventVerifier
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.SystemProperties
@@ -25,12 +24,14 @@ import android.view.WindowManager
 import android.virtualdevice.cts.common.VirtualDeviceRule
 import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.cts.input.BlockingQueueEventVerifier
 import com.android.cts.input.CaptureEventActivity
 import com.android.cts.input.DefaultPointerSpeedRule
 import com.android.cts.input.TestPointerDevice
 import com.android.cts.input.VirtualDisplayActivityScenario
 import com.android.cts.input.inputeventmatchers.withMotionAction
 import com.android.xts.root.annotations.RequireAdbRoot
+import kotlin.test.assertNotNull
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -46,7 +47,6 @@ import platform.test.screenshot.ScreenshotTestRule
 import platform.test.screenshot.assertAgainstGolden
 import platform.test.screenshot.matchers.AlmostPerfectMatcher
 import platform.test.screenshot.matchers.BitmapMatcher
-import kotlin.test.assertNotNull
 
 /**
  * End-to-end tests for the hiding pointer icons of screenshots of secure displays
@@ -64,7 +64,7 @@ import kotlin.test.assertNotNull
 @RequireAdbRoot
 class HidePointerIconOnSecureWindowScreenshotTest {
     private lateinit var activity: CaptureEventActivity
-    private lateinit var verifier: EventVerifier
+    private lateinit var verifier: BlockingQueueEventVerifier
     private lateinit var exactScreenshotMatcher: BitmapMatcher
 
     @get:Rule
@@ -105,7 +105,7 @@ class HidePointerIconOnSecureWindowScreenshotTest {
             virtualDisplayRule.virtualDisplay.display,
         )
 
-        verifier = EventVerifier(activity::getInputEvent)
+        verifier = activity.verifier
 
         exactScreenshotMatcher =
             AlmostPerfectMatcher(acceptableThresholdCount = MAX_PIXELS_DIFFERENT)
