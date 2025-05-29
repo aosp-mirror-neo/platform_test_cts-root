@@ -1,0 +1,140 @@
+// Copyright (C) 2025 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+    default_team: "trendy_team_framework_android_packages",
+}
+
+filegroup {
+    name: "cts-root-developer-verification-data",
+    srcs: ["data/**/*"],
+}
+
+filegroup {
+    name: "cts-root-test-base-src",
+    srcs: [
+        "src/**/DeveloperVerificationTestBase.java",
+        "src/**/DeveloperVerificationInstallerTestBase.java",
+    ],
+}
+
+java_defaults {
+    name: "cts_root_developer_verification_defaults",
+    defaults: ["cts_defaults"],
+    srcs: [
+        ":cts-root-test-base-src",
+    ],
+    libs: [
+        "android.test.runner.stubs",
+        "android.test.base.stubs",
+    ],
+    platform_apis: true,
+    static_libs: [
+        "androidx.test.core",
+        "androidx.test.rules",
+        "compatibility-device-util-axt",
+        "CtsRootDeveloperVerificationUtils",
+        "flag-junit",
+        "platform-test-annotations",
+        "truth",
+    ],
+    test_suites: [
+        "cts_root",
+        "general-tests",
+    ],
+    data: [
+        ":cts-root-developer-verification-data",
+        ":CtsRootEmptyTestApp",
+        ":CtsRootVerifierApp",
+        ":CtsRootVerifierProviderOverlay",
+    ],
+}
+
+java_library {
+    name: "CtsRootDeveloperVerificationUtils",
+    srcs: ["src/android/content/pm/cts_root/utils/*.java"],
+    libs: [
+        "android.test.base.stubs.system",
+        "android.test.runner.stubs.system",
+        "androidx.test.rules",
+        "compatibility-device-util-axt",
+        "junit",
+        "truth",
+    ],
+}
+
+android_test {
+    name: "CtsRootDeveloperVerificationPrivInstallerTarget36TestCases",
+    defaults: ["cts_root_developer_verification_defaults"],
+    srcs: [
+        "src/**/DeveloperVerificationInstallerTarget36Test.java",
+    ],
+    data: [
+        ":CtsRootPrivInstallerAppTarget36",
+    ],
+    test_config_template: "AndroidTest_PrivTemplate36.xml",
+}
+
+// Non-privileged installer targeting 36 behaves the same as the privilged installer targeting 36
+// regarding the verification result. Therefore, the two test modules use the same test methods, but
+// differ in the way the installer is installed.
+android_test {
+    name: "CtsRootDeveloperVerificationInstallerTarget36TestCases",
+    defaults: ["cts_root_developer_verification_defaults"],
+    srcs: [
+        "src/**/DeveloperVerificationInstallerTarget36Test.java",
+    ],
+    data: [
+        ":CtsRootInstallerAppTarget36",
+    ],
+    test_config_template: "AndroidTest_Template36.xml",
+}
+
+android_test {
+    name: "CtsRootDeveloperVerificationPrivInstallerTarget35TestCases",
+    defaults: ["cts_root_developer_verification_defaults"],
+    srcs: [
+        "src/**/DeveloperVerificationPrivInstallerTarget35Test.java",
+    ],
+    data: [
+        ":CtsRootPrivInstallerAppTarget35",
+    ],
+    test_config_template: "AndroidTest_PrivTemplate35.xml",
+}
+
+android_test {
+    name: "CtsRootDeveloperVerificationInstallerTarget35TestCases",
+    defaults: ["cts_root_developer_verification_defaults"],
+    srcs: [
+        "src/**/DeveloperVerificationInstallerTarget35Test.java",
+    ],
+    data: [
+        ":CtsRootInstallerAppTarget35",
+    ],
+    test_config_template: "AndroidTest_Template35.xml",
+}
+
+android_test {
+    name: "CtsRootDeveloperVerificationVerifierTestCases",
+    defaults: ["cts_root_developer_verification_defaults"],
+    srcs: [
+        "src/**/DeveloperVerificationVerifierTest.java",
+    ],
+    data: [
+        ":CtsRootVerifierAppV2",
+        ":CtsRootVerifierAppV3",
+    ],
+    test_config_template: "AndroidTest_VerifierUpdate.xml",
+}
