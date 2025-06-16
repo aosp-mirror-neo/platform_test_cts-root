@@ -149,8 +149,8 @@ public abstract class DeveloperVerificationTestBase {
         assertThat(pi.applicationInfo).isNotNull();
         // Make sure that the test verifier is now the default verifier
         PackageInstaller packageInstaller = pm.getPackageInstaller();
-        assertThat(packageInstaller.getDeveloperVerificationServiceProvider()).isEqualTo(
-                VERIFIER_PACKAGE_NAME);
+        assertThat(packageInstaller.getDeveloperVerificationServiceProvider().getPackageName())
+                .isEqualTo(VERIFIER_PACKAGE_NAME);
     }
 
     @Before
