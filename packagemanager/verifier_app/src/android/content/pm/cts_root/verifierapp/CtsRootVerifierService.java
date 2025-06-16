@@ -80,7 +80,7 @@ public class CtsRootVerifierService extends DeveloperVerifierService {
         // First override the session policy if the override has been requested
         if (isPolicyOverrideEnabled()) {
             int policyOverride = getPolicyOverride();
-            session.setVerificationPolicy(policyOverride);
+            session.setPolicy(policyOverride);
         }
 
         switch (testMode) {
@@ -131,7 +131,7 @@ public class CtsRootVerifierService extends DeveloperVerifierService {
             case MODE_LITE:
                 status = new DeveloperVerificationStatus.Builder()
                         .setVerified(true)
-                        .setLite(true)
+                        .setLiteVerification(true)
                         .build();
                 session.reportVerificationComplete(status);
                 Log.i(TAG, "Reported verification pass with lite verification.");
