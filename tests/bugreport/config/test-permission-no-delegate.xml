@@ -1,0 +1,5 @@
+<permissions>
+    <privapp-permissions package="android.bugreport.cts_root.privileged">
+        <permission name="android.permission.DUMP" />
+    </privapp-permissions>
+</permissions>
