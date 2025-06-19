@@ -14,12 +14,14 @@
 
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
+    default_team: "trendy_team_android_crumpet",
 }
 
-android_test {
-    name: "CtsRootBugreportTestCases",
+java_defaults {
+    name: "CtsRootBugreportTestCases_defaults",
     defaults: ["cts_defaults"],
     static_libs: [
+        "android.os.flags-aconfig-java",
         "androidx.test.rules",
         "androidx.test.uiautomator_uiautomator",
         "compatibility-device-util-axt",
@@ -31,8 +33,53 @@ android_test {
         "android.test.base.stubs.test",
     ],
     data: [":ctsroot-bugreport-artifacts"],
-    srcs: ["src/**/*.java"],
+    srcs: ["src/android/bugreport/cts_root/BugreportManagerTest.java"],
     sdk_version: "test_current",
+}
+
+android_test {
+    name: "CtsRootBugreportTestCases",
+    defaults: ["CtsRootBugreportTestCases_defaults"],
+    test_suites: [
+        "cts_root",
+        "general-tests",
+    ],
+}
+
+// Run CtsRootBugreportTestCases on Privileged application w/o
+// CAPTURE_CONSENTLESS_BUGREPORT_DELEGATED_CONSENT permission
+android_test {
+    name: "CtsRootBugreportPrivilegedNoDelegateTestCases",
+    defaults: ["CtsRootBugreportTestCases_defaults"],
+    manifest: "AndroidManifestPrivileged-no-delegate.xml",
+    test_config: "AndroidTestPrivileged-no-delegate.xml",
+    test_suites: [
+        "cts_root",
+        "general-tests",
+    ],
+}
+
+// Run on Privileged application w/ CAPTURE_CONSENTLESS_BUGREPORT_DELEGATED_CONSENT
+android_test {
+    name: "CtsRootBugreportPrivilegedTestCases",
+    defaults: ["cts_defaults"],
+    static_libs: [
+        "android.os.flags-aconfig-java",
+        "androidx.test.rules",
+        "androidx.test.uiautomator_uiautomator",
+        "compatibility-device-util-axt",
+        "truth",
+        "device_policy_aconfig_flags_lib",
+    ],
+    libs: [
+        "android.test.runner.stubs.test",
+        "android.test.base.stubs.test",
+    ],
+    data: [":ctsroot-bugreport-artifacts"],
+    srcs: ["src/android/bugreport/cts_root/BugreportManagerPrivilegedTest.java"],
+    sdk_version: "test_current",
+    manifest: "AndroidManifestPrivileged.xml",
+    test_config: "AndroidTestPrivileged.xml",
     test_suites: [
         "cts_root",
         "general-tests",
@@ -41,5 +88,9 @@ android_test {
 
 filegroup {
     name: "ctsroot-bugreport-artifacts",
-    srcs: ["config/test-sysconfig.xml"],
+    srcs: [
+        "config/test-sysconfig.xml",
+        "config/test-permission.xml",
+        "config/test-permission-no-delegate.xml",
+    ],
 }
