@@ -18,4 +18,5 @@
 <!-- WARNING: This is a test config. -->
 <config>
   <bugreport-whitelisted package="android.bugreport.cts_root" />
+  <bugreport-whitelisted package="android.bugreport.cts_root.privileged" />
 </config>

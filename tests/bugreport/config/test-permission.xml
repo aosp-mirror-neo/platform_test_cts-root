@@ -1,0 +1,6 @@
+<permissions>
+    <privapp-permissions package="android.bugreport.cts_root.privileged">
+        <permission name="android.permission.DUMP" />
+        <permission name="android.permission.CAPTURE_CONSENTLESS_BUGREPORT_DELEGATED_CONSENT" />
+    </privapp-permissions>
+</permissions>
