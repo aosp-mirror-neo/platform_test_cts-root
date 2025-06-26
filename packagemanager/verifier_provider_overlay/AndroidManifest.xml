@@ -18,6 +18,6 @@
         package="android.content.pm.cts_root.verifierprovideroverlay" >
     <overlay
         android:targetPackage="android"
-        android:priority="1"
+        android:priority="100"
         android:isStatic="true" />
 </manifest>
