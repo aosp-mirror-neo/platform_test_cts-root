@@ -2,4 +2,5 @@
 
 <resources>
   <string name="config_developerVerificationServiceProviderPackageName" translatable="false">android.content.pm.cts_root.verifierapp</string>
+  <string name="config_developerVerificationPolicyDelegatePackageName" translatable="false">android.content.pm.cts_root.delegateapp</string>
 </resources>

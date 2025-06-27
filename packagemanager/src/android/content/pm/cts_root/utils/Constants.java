@@ -37,7 +37,14 @@ public class Constants {
     public static final String EXTRA_EXTENSION_RESPONSE_KEY = "extra-extension-response-key";
     // Test -> Verifier
     public static final String EXTRA_EXTENSION_RESPONSE_VALUE = "extra-extension-response-value";
-
+    public static final String ACTION_QUERY_DELEGATE = "android.content.pm.cts_root.QUERY_DELEGATE";
+    public static final String ACTION_REPORT_QUERY_DELEGATE_RESULT =
+            "android.content.pm.cts_root.QUERY_DELEGATE_RESULT";
+    public static final String EXTRA_DELEGATE_PACKAGE_NAME = "extra-delegate-package-name";
+    public static final String ACTION_SET_POLICY = "android.content.pm.cts_root.SET_POLICY";
+    public static final String ACTION_REPORT_POLICY_SET_RESULT =
+            "android.content.pm.cts_root.REPORT_POLICY_SET_RESULT";
+    public static final String EXTRA_POLICY_VALUE = "extra-policy-value";
 
     // Constants for verifier modes
     public static final int MODE_PASS = 0;
@@ -63,4 +70,11 @@ public class Constants {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Mode {}
+
+
+    public static final String VERIFIER_PACKAGE_NAME = "android.content.pm.cts_root.verifierapp";
+
+    public static final String DELEGATE_PACKAGE_NAME = "android.content.pm.cts_root.delegateapp";
+    public static final String INSTALLER_PACKAGE_NAME = "android.content.pm.cts_root.installerapp";
+
 }

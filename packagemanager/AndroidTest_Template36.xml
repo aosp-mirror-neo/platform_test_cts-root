@@ -25,6 +25,7 @@
     <target_preparer class="com.android.tradefed.targetprep.PushFilePreparer">
         <option name="push-file" key="CtsRootVerifierProviderOverlay.apk" value="/product/overlay/CtsRootVerifierProviderOverlay.apk" />
         <option name="push-file" key="CtsRootVerifierApp.apk" value="/system/priv-app/CtsRootVerifierApp/CtsRootVerifierApp.apk" />
+        <option name="push-file" key="CtsRootDelegateApp.apk" value="/system/priv-app/CtsRootDelegateApp/CtsRootDelegateApp.apk" />
         <option name="push-file" key="developer-verification-cts-root-permission.xml" value="/system/etc/permissions/developer-verification-cts-root-permission.xml" />
         <option name="push-file" key="CtsRootEmptyTestApp.apk" value="/data/local/tmp/cts-root/CtsRootEmptyTestApp.apk" />
         <option name="cleanup" value="true" />
