@@ -321,7 +321,7 @@ public abstract class DeveloperVerificationTestBase {
             Intent userActionIntentReceived, int sessionIdExpected) {
         assertThat(userActionIntentReceived).isNotNull();
         assertThat(userActionIntentReceived.getAction()).isEqualTo(
-                PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE);
+                PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION);
         // Verify the content of the intent
         assertThat(userActionIntentReceived.getPackage()).isEqualTo(
                 getPackageInstallerPackageName());

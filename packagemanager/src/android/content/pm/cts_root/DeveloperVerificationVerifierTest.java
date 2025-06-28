@@ -19,6 +19,7 @@ import static android.content.pm.Flags.FLAG_VERIFICATION_SERVICE;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -31,6 +32,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.compatibility.common.util.SystemUtil;
 
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +52,16 @@ public class DeveloperVerificationVerifierTest {
 
     private static final Context sContext =
             InstrumentationRegistry.getInstrumentation().getContext();
+
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        // Test that the test verifier is the system's default developer verifier
+        final ComponentName verifierComponentName =
+                sContext.getPackageManager().getPackageInstaller()
+                        .getDeveloperVerificationServiceProvider();
+        assertThat(verifierComponentName).isNotNull();
+        assertThat(verifierComponentName.getPackageName()).isEqualTo(VERIFIER_PACKAGE_NAME);
+    }
 
     @Test
     public void testUpdatedVerifierCannotBeUninstalled() throws Exception {
