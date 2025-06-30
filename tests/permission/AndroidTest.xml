@@ -34,6 +34,11 @@
         <option name="test-file-name" value="CtsRootPermissionTestCases.apk" />
     </target_preparer>
 
+    <!-- Must switch to system user (not full) otherwise tests that use LocalManagerRegistry would fail. -->
+    <target_preparer class="com.android.tradefed.targetprep.SwitchUserTargetPreparer">
+        <option name="user-type" value="SYSTEM" />
+    </target_preparer>
+
     <test class="com.android.tradefed.testtype.AndroidJUnitTest">
         <option name="package" value="android.permission.cts_root" />
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner" />
