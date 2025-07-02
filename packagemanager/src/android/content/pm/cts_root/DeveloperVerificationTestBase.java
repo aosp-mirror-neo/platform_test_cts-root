@@ -28,6 +28,8 @@ import static android.content.pm.cts_root.utils.Constants.EXTRA_REJECT_MESSAGE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_SESSION_VERIFICATION_POLICY_OVERRIDE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_TEST_MODE;
 import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
+import static android.content.pm.cts_root.utils.Utils.isLowRamDevice;
+import static android.content.pm.cts_root.utils.Utils.setDefaultVerificationPolicy;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -42,6 +44,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.cts_root.utils.Constants;
+import android.content.pm.cts_root.utils.Utils;
 import android.net.Uri;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -103,11 +106,12 @@ public abstract class DeveloperVerificationTestBase {
         );
     }
 
-    // Default timeout to wait for results in this test
-    static final long DEFAULT_TIMEOUT_MS =
-            isLowRamDevice() ? TimeUnit.SECONDS.toMillis(60) : TimeUnit.SECONDS.toMillis(15);
     protected static final Context sContext =
             InstrumentationRegistry.getInstrumentation().getContext();
+    // Default timeout to wait for results in this test
+    static final long DEFAULT_TIMEOUT_MS = isLowRamDevice(sContext)
+            ? TimeUnit.SECONDS.toMillis(60) : TimeUnit.SECONDS.toMillis(15);
+
     private static final PackageInstaller sPackageInstaller =
             sContext.getPackageManager().getPackageInstaller();
     private static final int sUserId = ActivityManager.getCurrentUser();
@@ -123,7 +127,7 @@ public abstract class DeveloperVerificationTestBase {
     @BeforeClass
     public static void setUpBeforeClass() {
         // Remember the previous default policy and restore it later
-        sPreviousDefaultPolicy = getDefaultVerificationPolicy(sUserId);
+        sPreviousDefaultPolicy = Utils.getDefaultVerificationPolicy(sContext);
         // Remember the timeout configs and restore them later.
         sPreviousRequestTimeoutMillis =
                 getTimeoutValueFromDeviceConfig(PROPERTY_VERIFICATION_REQUEST_TIMEOUT_MILLIS);
@@ -154,9 +158,9 @@ public abstract class DeveloperVerificationTestBase {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         // Change the default verification policy
-        setDefaultVerificationPolicy(sDefaultPolicy, sUserId);
+        setDefaultVerificationPolicy(sContext, sDefaultPolicy, DEFAULT_TIMEOUT_MS);
         mInstallerResult = new CompletableFuture<>();
         mVerifierModeSet = new CompletableFuture<>();
         mInstallConfirmationReceived = new CompletableFuture<>();
@@ -172,12 +176,12 @@ public abstract class DeveloperVerificationTestBase {
     }
 
     @AfterClass
-    public static void tearDownAfterClass() {
+    public static void tearDownAfterClass() throws Exception {
         setTimeoutValueInDeviceConfig(
                 PROPERTY_VERIFICATION_REQUEST_TIMEOUT_MILLIS, sPreviousRequestTimeoutMillis);
         setTimeoutValueInDeviceConfig(
                 PROPERTY_VERIFIER_CONNECTION_TIMEOUT_MILLIS, sPreviousConnectionTimeoutMillis);
-        setDefaultVerificationPolicy(sPreviousDefaultPolicy, sUserId);
+        setDefaultVerificationPolicy(sContext, sPreviousDefaultPolicy, DEFAULT_TIMEOUT_MS);
     }
 
     private void configureAndLaunchInstaller(String installerPackageName,
@@ -238,13 +242,6 @@ public abstract class DeveloperVerificationTestBase {
                     break;
             }
         }
-    }
-
-    private static boolean isLowRamDevice() {
-        return InstrumentationRegistry.getInstrumentation()
-                .getContext()
-                .getSystemService(ActivityManager.class)
-                .isLowRamDevice();
     }
 
     private void configureVerifier(@Constants.Mode int mode, @Nullable String rejectMessage,
@@ -354,20 +351,6 @@ public abstract class DeveloperVerificationTestBase {
             // Only change the value if the current value is different
             stateManager.set(value);
         }
-    }
-
-    private static int getDefaultVerificationPolicy(int userId) {
-        String policyStr =
-                SystemUtil.runShellCommand("pm get-developer-verification-policy --user "
-                        + userId).trim();
-        return Integer.parseInt(policyStr);
-    }
-
-    private static void setDefaultVerificationPolicy(
-            @PackageInstaller.DeveloperVerificationPolicy int policy, int userId) {
-        SystemUtil.runShellCommand(
-                "pm set-developer-verification-policy --user " + userId + " " + policy);
-        assertThat(getDefaultVerificationPolicy(userId)).isEqualTo(policy);
     }
 
     protected static class TestParams {

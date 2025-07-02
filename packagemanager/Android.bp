@@ -59,6 +59,7 @@ java_defaults {
         ":CtsRootEmptyTestApp",
         ":CtsRootVerifierApp",
         ":CtsRootVerifierProviderOverlay",
+        ":CtsRootDelegateApp",
     ],
 }
 
@@ -137,4 +138,13 @@ android_test {
         ":CtsRootVerifierAppV3",
     ],
     test_config_template: "AndroidTest_VerifierUpdate.xml",
+}
+
+android_test {
+    name: "CtsRootDeveloperVerificationPolicyDelegateTestCases",
+    defaults: ["cts_root_developer_verification_defaults"],
+    srcs: [
+        "src/**/DeveloperVerificationPolicyDelegateTest.java",
+    ],
+    test_config_template: "AndroidTest_PolicyDelegate.xml",
 }

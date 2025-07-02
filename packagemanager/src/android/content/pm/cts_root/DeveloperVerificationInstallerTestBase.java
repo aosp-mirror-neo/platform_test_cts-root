@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package android.content.pm.cts_root;
 
 import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
