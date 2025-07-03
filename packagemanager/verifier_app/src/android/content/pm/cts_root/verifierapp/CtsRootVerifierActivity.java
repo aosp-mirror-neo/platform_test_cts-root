@@ -18,7 +18,10 @@ package android.content.pm.cts_root.verifierapp;
 
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE;
 import static android.content.pm.cts_root.utils.Constants.ACTION_MODE_SET;
+import static android.content.pm.cts_root.utils.Constants.ACTION_QUERY_DELEGATE;
+import static android.content.pm.cts_root.utils.Constants.ACTION_REPORT_QUERY_DELEGATE_RESULT;
 import static android.content.pm.cts_root.utils.Constants.ACTION_SET_TEST_MODE;
+import static android.content.pm.cts_root.utils.Constants.EXTRA_DELEGATE_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPONSE_VALUE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_REJECT_MESSAGE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_SESSION_VERIFICATION_POLICY_OVERRIDE;
@@ -48,6 +51,24 @@ public class CtsRootVerifierActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
+        if (ACTION_QUERY_DELEGATE.equals(intent.getAction())) {
+            Log.i(TAG, "Query delegate request from automated tests");
+            String delegatePackageName = "";
+            try {
+                delegatePackageName = getApplicationContext().getPackageManager()
+                        .getPackageInstaller().getDeveloperVerificationPolicyDelegatePackage();
+            } catch (Exception e) {
+                Log.e(TAG, "Exception while getting delegate package name", e);
+                delegatePackageName = "ERROR";
+            }
+            Intent broadcastIntent = new Intent(ACTION_REPORT_QUERY_DELEGATE_RESULT);
+            broadcastIntent.setFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+            broadcastIntent.putExtra(EXTRA_DELEGATE_PACKAGE_NAME, delegatePackageName);
+            sendBroadcast(broadcastIntent);
+            finish();
+            return;
+        }
+
         if (!ACTION_SET_TEST_MODE.equals(intent.getAction())) {
             return;
         }

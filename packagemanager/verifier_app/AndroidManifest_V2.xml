@@ -25,6 +25,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.pm.cts_root.SET_VERIFIER_MODE"/>
+                <action android:name="android.content.pm.cts_root.QUERY_DELEGATE"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
