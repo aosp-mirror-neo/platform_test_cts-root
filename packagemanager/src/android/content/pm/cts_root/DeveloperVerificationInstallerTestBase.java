@@ -16,6 +16,7 @@
 
 package android.content.pm.cts_root;
 
+import static android.content.pm.cts_root.utils.Constants.MODE_BYPASS;
 import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT_WITH_POLICY_OVERRIDE;
 
@@ -74,6 +75,17 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
     public void testInstallWithVerifierPass() throws Exception {
         TestParams testParams = getTestParamsBuilder()
                 .setVerifierMode(MODE_PASS)
+                .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
+                .build();
+        installAndVerifyResults(testParams);
+    }
+
+    // When the verifier returns BYPASS, regardless of the default policy and the target sdk version
+    // of the installer, the installation should always go through.
+    @Test
+    public void testInstallWithVerifierBypass() throws Exception {
+        TestParams testParams = getTestParamsBuilder()
+                .setVerifierMode(MODE_BYPASS)
                 .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
                 .build();
         installAndVerifyResults(testParams);

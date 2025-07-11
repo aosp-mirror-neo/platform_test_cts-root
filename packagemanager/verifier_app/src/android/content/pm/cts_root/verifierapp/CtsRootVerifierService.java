@@ -17,6 +17,7 @@
 package android.content.pm.cts_root.verifierapp;
 
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE;
+import static android.content.pm.cts_root.utils.Constants.MODE_BYPASS;
 import static android.content.pm.cts_root.utils.Constants.MODE_CRASH;
 import static android.content.pm.cts_root.utils.Constants.MODE_INCOMPLETE_NETWORK_UNAVAILABLE;
 import static android.content.pm.cts_root.utils.Constants.MODE_INCOMPLETE_UNKNOWN;
@@ -135,6 +136,10 @@ public class CtsRootVerifierService extends DeveloperVerifierService {
                         .build();
                 session.reportVerificationComplete(status);
                 Log.i(TAG, "Reported verification pass with lite verification.");
+                break;
+            case MODE_BYPASS:
+                session.reportVerificationBypassed(/* bypassReason= */ 10);
+                Log.i(TAG, "Reported verification bypassed.");
                 break;
             case MODE_PASS:
                 // passthrough

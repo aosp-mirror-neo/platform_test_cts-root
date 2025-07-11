@@ -56,6 +56,7 @@ public class Constants {
     public static final int MODE_TIMEOUT = 6;
     public static final int MODE_CRASH = 7;
     public static final int MODE_LITE = 8;
+    public static final int MODE_BYPASS = 9;
 
     @IntDef(flag = true, prefix = { "MODE_" }, value = {
             MODE_PASS,
@@ -66,7 +67,8 @@ public class Constants {
             MODE_REJECT_WITH_POLICY_OVERRIDE,
             MODE_TIMEOUT,
             MODE_CRASH,
-            MODE_LITE
+            MODE_LITE,
+            MODE_BYPASS
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Mode {}
