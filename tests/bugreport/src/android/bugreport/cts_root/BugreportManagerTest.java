@@ -393,6 +393,7 @@ public class BugreportManagerTest {
     @RequiresFlagsEnabled(FLAG_BUGREPORT_MULTI_DISPLAY_SCREENSHOT_ENABLED)
     public void testBugreport_capturesMultiDisplayScreenshots() throws Exception {
         try {
+            ensureNotConsentlessReport();
             waitForDumpstateServiceToStop();
             File bugreportFile = createTempFile("startbugreport", ".zip");
             File screenshotZipFile = createTempFile("screenshot", ".zip");
