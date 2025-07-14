@@ -74,7 +74,7 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
 
     // Expiry time for staged sessions that have not changed state in this time
     private static final long MAX_TIME_SINCE_UPDATE_MILLIS = TimeUnit.DAYS.toMillis(21);
-
+    private int mUserId;
     private final InstallUtilsHost mHostUtils = new InstallUtilsHost(this);
     private WatchdogEventLogger mLogger = new WatchdogEventLogger();
 
@@ -100,6 +100,7 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
     @Before
     public void setUp() throws Exception {
         getDevice().enableAdbRoot();
+        mUserId = getDevice().getCurrentUser();
         mLogger.start(getDevice());
     }
 
@@ -114,7 +115,8 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
      */
     @Test
     public void testRollbackDataPolicy() throws Exception {
-        List<String> before = getSnapshotDirectories("/data/misc_ce/0/rollback");
+        List<String> before = getSnapshotDirectories(String.format("/data/misc_ce/%d/rollback",
+                mUserId));
 
         run("testRollbackDataPolicy_Phase1_Install");
         getDevice().reboot();
@@ -123,10 +125,11 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
         run("testRollbackDataPolicy_Phase3_VerifyRollback");
 
         // Verify snapshots are deleted after restoration
-        List<String> after = getSnapshotDirectories("/data/misc_ce/0/rollback");
+        List<String> after = getSnapshotDirectories(String.format("/data/misc_ce/%d/rollback",
+                mUserId));
         // Only check directories newly created during the test
         after.removeAll(before);
-        // There should be only one /data/misc_ce/0/rollback/<rollbackId> created during test
+        // There should be only one /data/misc_ce/<userId>/rollback/<rollbackId> created during test
         assertThat(after).hasSize(1);
         assertDirectoryIsEmpty(after.get(0));
     }
@@ -138,9 +141,9 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
     public void testRollbackApkInApexDataDirectories_Ce() throws Exception {
         // Push files to apk data directory
         String oldFilePath1 = apkDataDirCe(
-                SHIM_PACKAGE_NAME, 0) + "/" + TEST_FILENAME_1;
+                SHIM_PACKAGE_NAME, mUserId) + "/" + TEST_FILENAME_1;
         String oldFilePath2 = apkDataDirCe(
-                SHIM_PACKAGE_NAME, 0) + TEST_SUBDIR + TEST_FILENAME_2;
+                SHIM_PACKAGE_NAME, mUserId) + TEST_SUBDIR + TEST_FILENAME_2;
         pushString(TEST_STRING_1, oldFilePath1);
         pushString(TEST_STRING_2, oldFilePath2);
 
@@ -150,9 +153,9 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
 
         // Replace files in data directory
         String newFilePath3 = apkDataDirCe(
-                SHIM_PACKAGE_NAME, 0) + "/" + TEST_FILENAME_3;
+                SHIM_PACKAGE_NAME, mUserId) + "/" + TEST_FILENAME_3;
         String newFilePath4 = apkDataDirCe(
-                SHIM_PACKAGE_NAME, 0) + TEST_SUBDIR + TEST_FILENAME_4;
+                SHIM_PACKAGE_NAME, mUserId) + TEST_SUBDIR + TEST_FILENAME_4;
         getDevice().deleteFile(oldFilePath1);
         getDevice().deleteFile(oldFilePath2);
         pushString(TEST_STRING_3, newFilePath3);
@@ -178,8 +181,8 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
         run("testRollbackApkDataDirectories_Phase1_InstallV1");
 
         // Push files to apk data directory
-        String oldFilePath1 = apkDataDirDe(TESTAPP_A, 0) + "/" + TEST_FILENAME_1;
-        String oldFilePath2 = apkDataDirDe(TESTAPP_A, 0) + TEST_SUBDIR + TEST_FILENAME_2;
+        String oldFilePath1 = apkDataDirDe(TESTAPP_A, mUserId) + "/" + TEST_FILENAME_1;
+        String oldFilePath2 = apkDataDirDe(TESTAPP_A, mUserId) + TEST_SUBDIR + TEST_FILENAME_2;
         pushString(TEST_STRING_1, oldFilePath1);
         pushString(TEST_STRING_2, oldFilePath2);
 
@@ -188,8 +191,8 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
         getDevice().reboot();
 
         // Replace files in data directory
-        String newFilePath3 = apkDataDirDe(TESTAPP_A, 0) + "/" + TEST_FILENAME_3;
-        String newFilePath4 = apkDataDirDe(TESTAPP_A, 0) + TEST_SUBDIR + TEST_FILENAME_4;
+        String newFilePath3 = apkDataDirDe(TESTAPP_A, mUserId) + "/" + TEST_FILENAME_3;
+        String newFilePath4 = apkDataDirDe(TESTAPP_A, mUserId) + TEST_SUBDIR + TEST_FILENAME_4;
         getDevice().deleteFile(oldFilePath1);
         getDevice().deleteFile(oldFilePath2);
         pushString(TEST_STRING_3, newFilePath3);
@@ -211,13 +214,14 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
      */
     @Test
     public void testRollbackApexDataDirectories_Ce() throws Exception {
-        List<String> before = getSnapshotDirectories("/data/misc_ce/0/apexrollback");
+        List<String> before = getSnapshotDirectories(String.format("/data/misc_ce/%d/apexrollback",
+                mUserId));
 
         // Push files to apex data directory
         String oldFilePath1 = apexDataDirCe(
-                SHIM_APEX_PACKAGE_NAME, 0) + "/" + TEST_FILENAME_1;
+                SHIM_APEX_PACKAGE_NAME, mUserId) + "/" + TEST_FILENAME_1;
         String oldFilePath2 = apexDataDirCe(
-                SHIM_APEX_PACKAGE_NAME, 0) + TEST_SUBDIR + TEST_FILENAME_2;
+                SHIM_APEX_PACKAGE_NAME, mUserId) + TEST_SUBDIR + TEST_FILENAME_2;
         pushString(TEST_STRING_1, oldFilePath1);
         pushString(TEST_STRING_2, oldFilePath2);
 
@@ -227,9 +231,9 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
 
         // Replace files in data directory
         String newFilePath3 = apexDataDirCe(
-                SHIM_APEX_PACKAGE_NAME, 0) + "/" + TEST_FILENAME_3;
+                SHIM_APEX_PACKAGE_NAME, mUserId) + "/" + TEST_FILENAME_3;
         String newFilePath4 = apexDataDirCe(
-                SHIM_APEX_PACKAGE_NAME, 0) + TEST_SUBDIR + TEST_FILENAME_4;
+                SHIM_APEX_PACKAGE_NAME, mUserId) + TEST_SUBDIR + TEST_FILENAME_4;
         getDevice().deleteFile(oldFilePath1);
         getDevice().deleteFile(oldFilePath2);
         pushString(TEST_STRING_3, newFilePath3);
@@ -246,10 +250,12 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
         assertFileNotExists(newFilePath4);
 
         // Verify snapshots are deleted after restoration
-        List<String> after = getSnapshotDirectories("/data/misc_ce/0/apexrollback");
+        List<String> after = getSnapshotDirectories(String.format("/data/misc_ce/%d/apexrollback",
+                mUserId));
         // Only check directories newly created during the test
         after.removeAll(before);
-        // There should be only one /data/misc_ce/0/apexrollback/<rollbackId> created during test
+        // There should be only one /data/misc_ce/<userId>/apexrollback/<rollbackId> created during
+        // test
         assertThat(after).hasSize(1);
         assertDirectoryIsEmpty(after.get(0));
     }
@@ -259,13 +265,14 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
      */
     @Test
     public void testRollbackApexDataDirectories_DeUser() throws Exception {
-        List<String> before = getSnapshotDirectories("/data/misc_de/0/apexrollback");
+        List<String> before = getSnapshotDirectories(String.format("/data/misc_de/%d/apexrollback",
+                mUserId));
 
         // Push files to apex data directory
         String oldFilePath1 = apexDataDirDeUser(
-                SHIM_APEX_PACKAGE_NAME, 0) + "/" + TEST_FILENAME_1;
+                SHIM_APEX_PACKAGE_NAME, mUserId) + "/" + TEST_FILENAME_1;
         String oldFilePath2 = apexDataDirDeUser(
-                SHIM_APEX_PACKAGE_NAME, 0) + TEST_SUBDIR + TEST_FILENAME_2;
+                SHIM_APEX_PACKAGE_NAME, mUserId) + TEST_SUBDIR + TEST_FILENAME_2;
         pushString(TEST_STRING_1, oldFilePath1);
         pushString(TEST_STRING_2, oldFilePath2);
 
@@ -275,9 +282,9 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
 
         // Replace files in data directory
         String newFilePath3 = apexDataDirDeUser(
-                SHIM_APEX_PACKAGE_NAME, 0) + "/" + TEST_FILENAME_3;
+                SHIM_APEX_PACKAGE_NAME, mUserId) + "/" + TEST_FILENAME_3;
         String newFilePath4 = apexDataDirDeUser(
-                SHIM_APEX_PACKAGE_NAME, 0) + TEST_SUBDIR + TEST_FILENAME_4;
+                SHIM_APEX_PACKAGE_NAME, mUserId) + TEST_SUBDIR + TEST_FILENAME_4;
         getDevice().deleteFile(oldFilePath1);
         getDevice().deleteFile(oldFilePath2);
         pushString(TEST_STRING_3, newFilePath3);
@@ -294,10 +301,12 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
         assertFileNotExists(newFilePath4);
 
         // Verify snapshots are deleted after restoration
-        List<String> after = getSnapshotDirectories("/data/misc_de/0/apexrollback");
+        List<String> after = getSnapshotDirectories(String.format("/data/misc_de/%d/apexrollback",
+                mUserId));
         // Only check directories newly created during the test
         after.removeAll(before);
-        // There should be only one /data/misc_de/0/apexrollback/<rollbackId> created during test
+        // There should be only one /data/misc_de/<userId>/apexrollback/<rollbackId> created during
+        // test
         assertThat(after).hasSize(1);
         assertDirectoryIsEmpty(after.get(0));
     }
@@ -355,13 +364,14 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
      */
     @Test
     public void testExpireApexRollback() throws Exception {
-        List<String> before = getSnapshotDirectories("/data/misc_ce/0/apexrollback");
+        List<String> before = getSnapshotDirectories(String.format("/data/misc_ce/%d/apexrollback",
+                mUserId));
 
         // Push files to apex data directory
         String oldFilePath1 = apexDataDirCe(
-                SHIM_APEX_PACKAGE_NAME, 0) + "/" + TEST_FILENAME_1;
+                SHIM_APEX_PACKAGE_NAME, mUserId) + "/" + TEST_FILENAME_1;
         String oldFilePath2 = apexDataDirCe(
-                SHIM_APEX_PACKAGE_NAME, 0) + TEST_SUBDIR + TEST_FILENAME_2;
+                SHIM_APEX_PACKAGE_NAME, mUserId) + TEST_SUBDIR + TEST_FILENAME_2;
         pushString(TEST_STRING_1, oldFilePath1);
         pushString(TEST_STRING_2, oldFilePath2);
 
@@ -369,10 +379,12 @@ public class RollbackManagerHostTest extends BaseHostJUnit4Test {
         run("testRollbackApexDataDirectories_Phase1_Install");
         getDevice().reboot();
 
-        List<String> after = getSnapshotDirectories("/data/misc_ce/0/apexrollback");
+        List<String> after = getSnapshotDirectories(String.format("/data/misc_ce/%d/apexrollback",
+                mUserId));
         // Only check directories newly created during the test
         after.removeAll(before);
-        // There should be only one /data/misc_ce/0/apexrollback/<rollbackId> created during test
+        // There should be only one /data/misc_ce/<userId>/apexrollback/<rollbackId> created during
+        // test
         assertThat(after).hasSize(1);
         // Expire all rollbacks and check CE snapshot directories are deleted
         run("cleanUp");
