@@ -235,7 +235,8 @@ public abstract class DeveloperVerificationTestBase {
                     }
                     break;
                 case ACTION_MODE_SET:
-                    mVerifierModeSet.complete(intent.getIntExtra(EXTRA_TEST_MODE, MODE_PASS));
+                    mVerifierModeSet.complete(intent.getIntExtra(EXTRA_TEST_MODE,
+                            /* defaultValue= */ MODE_PASS));
                     break;
                 case null:
                 default:
