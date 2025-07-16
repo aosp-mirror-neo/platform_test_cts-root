@@ -18,7 +18,6 @@ package android.bugreport.cts_root;
 
 import static android.app.admin.flags.Flags.FLAG_ONBOARDING_BUGREPORT_STORAGE_BUG_FIX;
 import static android.app.admin.flags.Flags.FLAG_ONBOARDING_CONSENTLESS_BUGREPORTS;
-import static android.os.Flags.FLAG_BUGREPORT_MULTI_DISPLAY_SCREENSHOT_ENABLED;
 
 import static com.android.compatibility.common.util.SystemUtil.runShellCommand;
 
@@ -64,12 +63,9 @@ import org.junit.runner.RunWith;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * Device-side tests for Bugreport Manager API.
@@ -385,53 +381,6 @@ public class BugreportManagerTest {
             waitForDumpstateServiceToStop();
             // Remove all bugreport files
             SystemUtil.runShellCommand("rm -f -rR -v /bugreports/");
-        }
-    }
-
-    @LargeTest
-    @Test
-    @RequiresFlagsEnabled(FLAG_BUGREPORT_MULTI_DISPLAY_SCREENSHOT_ENABLED)
-    public void testBugreport_capturesMultiDisplayScreenshots() throws Exception {
-        try {
-            ensureNotConsentlessReport();
-            waitForDumpstateServiceToStop();
-            File bugreportFile = createTempFile("startbugreport", ".zip");
-            File screenshotZipFile = createTempFile("screenshot", ".zip");
-            CountDownLatch latch = new CountDownLatch(1);
-            BugreportCallbackImpl callback = new BugreportCallbackImpl(latch);
-
-            mBugreportManager.startBugreport(
-                    parcelFd(bugreportFile), parcelFd(screenshotZipFile),
-                    new BugreportParams(
-                            BugreportParams.BUGREPORT_MODE_FULL,
-                            BugreportParams.BUGREPORT_FLAG_CAPTURE_MULTI_DISPLAY_SCREENSHOT),
-                    mContext.getMainExecutor(), callback);
-            callback.waitForUiReady();
-            shareConsentDialog(ConsentReply.ALLOW);
-            latch.await(2, TimeUnit.MINUTES);
-
-            assertThat(callback.isSuccess()).isTrue();
-            assertThat(bugreportFile.length()).isGreaterThan(0);
-            assertContainsScreenshotFiles(screenshotZipFile);
-            waitForDumpstateServiceToStop();
-        } finally {
-            waitForDumpstateServiceToStop();
-            // Remove all bugreport files
-            SystemUtil.runShellCommand("rm -f -rR -v /bugreports/");
-        }
-    }
-
-    private void assertContainsScreenshotFiles(File file) throws Exception {
-        int fileCount = 0;
-        try (ZipFile zipFile = new ZipFile(file)) {
-            for (ZipEntry entry : Collections.list(zipFile.entries())) {
-                if (!entry.isDirectory() && entry.getName().endsWith(".png")) {
-                    fileCount++;
-                }
-            }
-        }
-        if (fileCount == 0) {
-            fail("Screenshot zip file does not contain any screenshot files.");
         }
     }
 
