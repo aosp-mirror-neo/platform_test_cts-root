@@ -16,6 +16,8 @@
 package android.content.pm.cts_root;
 
 import static android.content.pm.Flags.FLAG_VERIFICATION_SERVICE;
+import static android.content.pm.cts_root.utils.Constants.APK_PATH_BASE;
+import static android.content.pm.cts_root.utils.Constants.VERIFIER_PACKAGE_NAME;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -45,11 +47,7 @@ import org.junit.runner.RunWith;
 public class DeveloperVerificationVerifierTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
-
-    private static final String VERIFIER_PACKAGE_NAME = "android.content.pm.cts_root.verifierapp";
-    private static final String VERIFIER_V3_APK_PATH =
-            "/data/local/tmp/cts-root/CtsRootVerifierAppV3.apk";
-
+    private static final String VERIFIER_V3_APK_PATH = APK_PATH_BASE + "CtsRootVerifierAppV3.apk";
     private static final Context sContext =
             InstrumentationRegistry.getInstrumentation().getContext();
 
@@ -68,6 +66,7 @@ public class DeveloperVerificationVerifierTest {
         final ApplicationInfo verifierInfo = sContext.getPackageManager().getPackageInfo(
                 VERIFIER_PACKAGE_NAME, /* flags= */ 0).applicationInfo;
         // Check that the status of the installer is privileged
+        assertThat(verifierInfo).isNotNull();
         assertThat(verifierInfo.isPrivilegedApp()).isEqualTo(true);
         assertThat(verifierInfo.isSystemApp()).isEqualTo(true);
         // Check that the installer has been updated
@@ -97,7 +96,8 @@ public class DeveloperVerificationVerifierTest {
 
     private static void installApkFromPathWithRollbackEnabled(String apkPath) {
         String result =
-                SystemUtil.runShellCommandOrThrow("pm install --enable-rollback " + apkPath).trim();
+                SystemUtil.runShellCommandOrThrow(
+                        "pm install --enable-rollback " + apkPath).trim();
         assertThat(result).isEqualTo("Success");
     }
 

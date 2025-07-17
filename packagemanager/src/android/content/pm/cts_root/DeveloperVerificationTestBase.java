@@ -23,11 +23,14 @@ import static android.content.pm.cts_root.utils.Constants.ACTION_MODE_SET;
 import static android.content.pm.cts_root.utils.Constants.ACTION_SET_TEST_MODE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPONSE_KEY;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPONSE_VALUE;
+import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_APK_PATH;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_RESULT_INTENT;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_REJECT_MESSAGE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_SESSION_VERIFICATION_POLICY_OVERRIDE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_TEST_MODE;
 import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
+import static android.content.pm.cts_root.utils.Constants.EMPTY_TEST_APK;
+import static android.content.pm.cts_root.utils.Constants.VERIFIER_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Utils.isLowRamDevice;
 import static android.content.pm.cts_root.utils.Utils.setDefaultVerificationPolicy;
 
@@ -85,8 +88,6 @@ public abstract class DeveloperVerificationTestBase {
             "verification_request_timeout_millis";
     private static final String PROPERTY_VERIFIER_CONNECTION_TIMEOUT_MILLIS =
             "verifier_connection_timeout_millis";
-    private static final String VERIFIER_PACKAGE_NAME = "android.content.pm.cts_root.verifierapp";
-
     protected static final String REJECT_MESSAGE = "You shall not pass!";
     protected static final String EXTENSION_RESPONSE_KEY = "extension-response-key";
     protected static final String EXTENSION_RESPONSE_VALUE = "extension-response-value";
@@ -153,6 +154,7 @@ public abstract class DeveloperVerificationTestBase {
         assertThat(pi.applicationInfo).isNotNull();
         // Make sure that the test verifier is now the default verifier
         PackageInstaller packageInstaller = pm.getPackageInstaller();
+        assertThat(packageInstaller.getDeveloperVerificationServiceProvider()).isNotNull();
         assertThat(packageInstaller.getDeveloperVerificationServiceProvider().getPackageName())
                 .isEqualTo(VERIFIER_PACKAGE_NAME);
     }
@@ -200,6 +202,7 @@ public abstract class DeveloperVerificationTestBase {
         if (extensionResponseKey != null) {
             intent.putExtra(EXTRA_EXTENSION_RESPONSE_KEY, extensionResponseKey);
         }
+        intent.putExtra(EXTRA_INSTALL_APK_PATH, EMPTY_TEST_APK);
         return intent;
     }
 
@@ -211,6 +214,9 @@ public abstract class DeveloperVerificationTestBase {
                 case ACTION_INSTALLER_RESULT:
                     final Intent resultIntent = intent.getParcelableExtra(
                             EXTRA_INSTALL_RESULT_INTENT, Intent.class);
+                    if (resultIntent == null) {
+                        break;
+                    }
                     final Intent extraIntent = resultIntent.getParcelableExtra(
                             Intent.EXTRA_INTENT, Intent.class);
                     final int sessionId = resultIntent.getIntExtra(
