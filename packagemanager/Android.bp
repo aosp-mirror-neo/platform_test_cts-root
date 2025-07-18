@@ -148,3 +148,16 @@ android_test {
     ],
     test_config_template: "AndroidTest_PolicyDelegate.xml",
 }
+
+android_test {
+    name: "CtsRootDeveloperVerificationEmergencyBypassTestCases",
+    defaults: ["cts_root_developer_verification_defaults"],
+    srcs: [
+        "src/**/DeveloperVerificationEmergencyBypassTest.java",
+    ],
+    data: [
+        ":CtsRootEmergencyInstallerApp",
+        ":CtsRootPrivInstallerAppTarget36",
+    ],
+    test_config_template: "AndroidTest_EmergencyBypass.xml",
+}

@@ -79,3 +79,15 @@ android_test_helper_app {
         "AndroidManifestInstallerPermission.xml",
     ],
 }
+
+android_test_helper_app {
+    name: "CtsRootEmergencyInstallerApp",
+    defaults: ["cts_root_installer_app_defaults"],
+    min_sdk_version: "33",
+    target_sdk_version: "36",
+    manifest: "AndroidManifest.xml",
+    package_name: "android.content.pm.cts_root.emergencyinstallerapp",
+    additional_manifests: [
+        "AndroidManifestEmergencyInstallerPermission.xml",
+    ],
+}

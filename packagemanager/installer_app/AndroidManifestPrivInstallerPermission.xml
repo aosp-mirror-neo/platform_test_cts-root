@@ -18,4 +18,6 @@
         package="android.content.pm.cts_root.installerapp" >
     <!-- for privileged version -->
     <uses-permission android:name="android.permission.INSTALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.INSTALL_PACKAGE_UPDATES"/>
+    <uses-permission android:name="android.permission.INSTALL_SELF_UPDATES"/>
 </manifest>

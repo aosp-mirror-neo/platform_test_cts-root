@@ -125,7 +125,8 @@ public class DeveloperVerificationPrivInstallerTarget35Test
             testParamsBuilder
                     .setStatusCodeExpected(PackageInstaller.STATUS_FAILURE_ABORTED)
                     .setVerificationFailureReasonExpected(
-                            PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN)
+                            PackageInstaller
+                                    .DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE)
                     .setErrorMessageExpected("INSTALL_FAILED_VERIFICATION_FAILURE: "
                             + "Verification cannot be completed because of unavailable network.")
                     .setHasUserActionIntentExpected(true);
