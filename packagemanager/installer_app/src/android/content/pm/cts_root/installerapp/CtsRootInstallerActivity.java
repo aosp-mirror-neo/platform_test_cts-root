@@ -21,6 +21,7 @@ import static android.content.pm.PackageInstaller.EXTRA_STATUS;
 import static android.content.pm.PackageInstaller.STATUS_FAILURE;
 import static android.content.pm.cts_root.utils.Constants.ACTION_INSTALLER_RESULT;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPONSE_KEY;
+import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_APK_PATH;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_RESULT_INTENT;
 
 import android.app.Activity;
@@ -44,7 +45,6 @@ import java.io.OutputStream;
 
 public class CtsRootInstallerActivity extends Activity {
     private static final String TAG = CtsRootInstallerActivity.class.getSimpleName();
-    private static final String APK_PATH = "/data/local/tmp/cts-root/CtsRootEmptyTestApp.apk";
     private static final String PACKAGE_NAME = "android.content.pm.cts_root.emptytestapp";
 
     @Override
@@ -63,12 +63,13 @@ public class CtsRootInstallerActivity extends Activity {
             extensionParams.putString(extensionResponseKey, "");
             params.setExtensionParams(extensionParams);
         }
+        String apkPath = getIntent().getStringExtra(EXTRA_INSTALL_APK_PATH);
 
         PackageInstaller pi = getApplicationContext().getPackageManager().getPackageInstaller();
         try {
             final int sessionId = pi.createSession(params);
             PackageInstaller.Session session = pi.openSession(sessionId);
-            writeFileToSession(session, APK_PATH);
+            writeFileToSession(session, apkPath);
             LocalIntentSender sender = new LocalIntentSender();
             session.commit(sender.getIntentSender());
         } catch (Exception e) {

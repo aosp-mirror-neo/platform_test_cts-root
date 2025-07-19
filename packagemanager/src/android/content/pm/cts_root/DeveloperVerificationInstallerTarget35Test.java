@@ -42,6 +42,7 @@ public class DeveloperVerificationInstallerTarget35Test
             final ApplicationInfo installerInfo = sContext.getPackageManager().getPackageInfo(
                     sInstallerPackageName, /* flags= */ 0).applicationInfo;
             // Check that the target sdk of the installer matches with the expectation
+            assertThat(installerInfo).isNotNull();
             assertThat(installerInfo.targetSdkVersion).isEqualTo(
                     Build.VERSION_CODES.VANILLA_ICE_CREAM);
         } catch (PackageManager.NameNotFoundException e) {

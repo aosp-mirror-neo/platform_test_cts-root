@@ -16,9 +16,11 @@
 
 package android.content.pm.cts_root;
 
+import static android.content.pm.cts_root.utils.Constants.INSTALLER_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Constants.MODE_BYPASS;
 import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT_WITH_POLICY_OVERRIDE;
+import static android.content.pm.cts_root.utils.Constants.PRIV_INSTALLER_PACKAGE_NAME;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -48,13 +50,19 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
             final ApplicationInfo installerInfo = sContext.getPackageManager().getPackageInfo(
                     sInstallerPackageName, /* flags= */ 0).applicationInfo;
             // Check that the status of the installer matches with the expectation
+            assertThat(installerInfo).isNotNull();
             assertThat(installerInfo.isPrivilegedApp()).isEqualTo(sTestArgIsInstallerPrivileged);
+            if (installerInfo.isPrivilegedApp()) {
+                assertThat(installerInfo.packageName).isEqualTo(PRIV_INSTALLER_PACKAGE_NAME);
+            } else {
+                assertThat(installerInfo.packageName).isEqualTo(INSTALLER_PACKAGE_NAME);
+            }
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected static TestParams.TestParamsBuilder getTestParamsBuilder() {
+    static TestParams.TestParamsBuilder getTestParamsBuilder() {
         return new TestParams.TestParamsBuilder()
                 .setInstallerPackageName(sInstallerPackageName)
                 .setIsInstallConfirmationExpected(!sTestArgIsInstallerPrivileged);
@@ -113,7 +121,7 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
     @Test
     public void testInstallWithVerifierIncompleteNetworkUnavailable()
             throws Exception {
-        TestParams testParams = getInstallWhenVerifierIncompleteUnknownTestParams();
+        TestParams testParams = getInstallWithVerifierIncompleteNetworkUnavailableTestParams();
         installAndVerifyResults(testParams);
     }
 

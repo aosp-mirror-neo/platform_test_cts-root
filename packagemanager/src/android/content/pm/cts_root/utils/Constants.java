@@ -35,6 +35,7 @@ public class Constants {
     public static final String EXTRA_REJECT_MESSAGE = "extra-reject-message";
     // Test -> Installer
     public static final String EXTRA_EXTENSION_RESPONSE_KEY = "extra-extension-response-key";
+    public static final String EXTRA_INSTALL_APK_PATH = "extra-install-apk-path";
     // Test -> Verifier
     public static final String EXTRA_EXTENSION_RESPONSE_VALUE = "extra-extension-response-value";
     public static final String ACTION_QUERY_DELEGATE = "android.content.pm.cts_root.QUERY_DELEGATE";
@@ -75,8 +76,10 @@ public class Constants {
 
 
     public static final String VERIFIER_PACKAGE_NAME = "android.content.pm.cts_root.verifierapp";
-
     public static final String DELEGATE_PACKAGE_NAME = "android.content.pm.cts_root.delegateapp";
     public static final String INSTALLER_PACKAGE_NAME = "android.content.pm.cts_root.installerapp";
-
+    public static final String PRIV_INSTALLER_PACKAGE_NAME =
+            "android.content.pm.cts_root.privinstallerapp";
+    public static final String APK_PATH_BASE = "/data/local/tmp/cts-root/";
+    public static final String EMPTY_TEST_APK = APK_PATH_BASE + "CtsRootEmptyTestApp.apk";
 }
