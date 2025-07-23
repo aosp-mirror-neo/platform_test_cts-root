@@ -21,9 +21,11 @@ import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.cts_root.utils.Constants.ACTION_INSTALLER_RESULT;
 import static android.content.pm.cts_root.utils.Constants.ACTION_MODE_SET;
 import static android.content.pm.cts_root.utils.Constants.ACTION_SET_TEST_MODE;
+import static android.content.pm.cts_root.utils.Constants.EMPTY_TEST_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPONSE_KEY;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPONSE_VALUE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_APK_PATH;
+import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_RESULT_INTENT;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_REJECT_MESSAGE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_SESSION_VERIFICATION_POLICY_OVERRIDE;
@@ -37,6 +39,7 @@ import static android.content.pm.cts_root.utils.Utils.setDefaultVerificationPoli
 import static com.google.common.truth.Truth.assertThat;
 
 import android.Manifest;
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
@@ -174,7 +177,11 @@ public abstract class DeveloperVerificationTestBase {
 
     @After
     public void tearDown() {
-        sContext.unregisterReceiver(mBroadcastReceiver);
+        try {
+            sContext.unregisterReceiver(mBroadcastReceiver);
+        } catch (IllegalArgumentException e) {
+            // Broadcast receiver was not registered. Ignore.
+        }
     }
 
     @AfterClass
@@ -187,14 +194,17 @@ public abstract class DeveloperVerificationTestBase {
     }
 
     private void configureAndLaunchInstaller(String installerPackageName,
-            @Nullable String extensionResponseKey) {
-        // Start the installer app to install an empty test app and listen for results
+            @Nullable String extensionResponseKey, @NonNull String apkPath,
+            @NonNull String packageName) {
+        // Start the installer app to install a test app at the given path and listen for results
         sContext.startActivity(
-                createLaunchInstallerIntent(installerPackageName, extensionResponseKey));
+                createLaunchInstallerIntent(installerPackageName, extensionResponseKey, apkPath,
+                        packageName));
     }
 
     private static Intent createLaunchInstallerIntent(String installerPackageName,
-            @Nullable String extensionResponseKey) {
+            @Nullable String extensionResponseKey, @NonNull String apkPath,
+            @NonNull String packageName) {
         Intent intent = new Intent("cts_root.action.LAUNCH_INSTALLER");
         intent.setPackage(installerPackageName);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -202,7 +212,8 @@ public abstract class DeveloperVerificationTestBase {
         if (extensionResponseKey != null) {
             intent.putExtra(EXTRA_EXTENSION_RESPONSE_KEY, extensionResponseKey);
         }
-        intent.putExtra(EXTRA_INSTALL_APK_PATH, EMPTY_TEST_APK);
+        intent.putExtra(EXTRA_INSTALL_APK_PATH, apkPath);
+        intent.putExtra(EXTRA_INSTALL_PACKAGE_NAME, packageName);
         return intent;
     }
 
@@ -280,7 +291,7 @@ public abstract class DeveloperVerificationTestBase {
                 extensionResponseValueExpected, testParams.getSessionPolicyOverride());
         // Launch the installer to install a package via the Session APIs
         configureAndLaunchInstaller(testParams.getInstallerPackageName(),
-                extensionResponseKeyExpected);
+                extensionResponseKeyExpected, testParams.getApkPath(), testParams.getPackageName());
         if (testParams.isInstallConfirmationExpected()) {
             // For a non-privileged installer, verify that the first user action requested was for
             // the install confirmation.
@@ -372,13 +383,15 @@ public abstract class DeveloperVerificationTestBase {
         private final boolean mHasUserActionIntentExpected;
         private final @PackageInstaller.DeveloperVerificationPolicy int mSessionPolicyOverride;
         private final boolean mIsInstallConfirmationExpected;
+        private final String mApkPath;
+        private final String mPackageName;
 
         protected TestParams(String installerPackageName, int verifierMode,
                 String verifierRejectMessage, int statusCodeExpected,
                 int verificationFailureReasonExpected, String errorMessageExpected,
                 Pair<String, String> extensionResponseKeyValuePairExpected,
                 boolean hasUserActionIntentExpected, int sessionPolicyOverride,
-                boolean isInstallConfirmationExpected) {
+                boolean isInstallConfirmationExpected, String apkPath, String packageName) {
             mInstallerPackageName = installerPackageName;
             mVerifierMode = verifierMode;
             mVerifierRejectMessage = verifierRejectMessage;
@@ -389,6 +402,8 @@ public abstract class DeveloperVerificationTestBase {
             mHasUserActionIntentExpected = hasUserActionIntentExpected;
             mSessionPolicyOverride = sessionPolicyOverride;
             mIsInstallConfirmationExpected = isInstallConfirmationExpected;
+            mApkPath = apkPath;
+            mPackageName = packageName;
         }
 
         public String getInstallerPackageName() {
@@ -430,6 +445,14 @@ public abstract class DeveloperVerificationTestBase {
             return mIsInstallConfirmationExpected;
         }
 
+        public String getApkPath() {
+            return mApkPath;
+        }
+
+        public String getPackageName() {
+            return mPackageName;
+        }
+
         static class TestParamsBuilder {
             private String mInstallerPackageName = null;
             @Constants.Mode
@@ -445,6 +468,9 @@ public abstract class DeveloperVerificationTestBase {
                     sDefaultPolicy;
 
             private boolean mIsInstallConfirmationExpected = false;
+
+            private String mApkPath = EMPTY_TEST_APK;
+            private String mPackageName = EMPTY_TEST_PACKAGE_NAME;
 
             public TestParamsBuilder setInstallerPackageName(String installerPackageName) {
                 this.mInstallerPackageName = installerPackageName;
@@ -502,13 +528,24 @@ public abstract class DeveloperVerificationTestBase {
                 return this;
             }
 
+            public TestParamsBuilder setApkPath(String apkPath) {
+                this.mApkPath = apkPath;
+                return this;
+            }
+
+            public TestParamsBuilder setPackageName(String packageName) {
+                this.mPackageName = packageName;
+                return this;
+            }
+
             public TestParams build() {
                 return new TestParams(this.mInstallerPackageName,
                         this.mVerifierMode, this.mVerifierRejectMessage, this.mStatusCodeExpected,
                         this.mVerificationFailureReasonExpected, this.mErrorMessageExpected,
                         this.mExtensionResponseKeyValuePairExpected,
                         this.mHasUserActionIntentExpected,
-                        this.mSessionPolicyOverride, this.mIsInstallConfirmationExpected);
+                        this.mSessionPolicyOverride, this.mIsInstallConfirmationExpected,
+                        this.mApkPath, this.mPackageName);
             }
         }
     }

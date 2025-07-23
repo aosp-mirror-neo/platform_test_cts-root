@@ -22,6 +22,12 @@
 
     <target_preparer class="com.android.tradefed.targetprep.RootTargetPreparer"/>
 
+    <target_preparer class="com.android.tradefed.targetprep.RunCommandTargetPreparer">
+        <!-- This is the only way to clean up an updated verifier app. -->
+        <option name="run-command" value="pm uninstall android.content.pm.cts_root.verifierapp" />
+        <option name="teardown-command" value="pm uninstall android.content.pm.cts_root.verifierapp" />
+    </target_preparer>
+
     <target_preparer class="com.android.tradefed.targetprep.PushFilePreparer">
         <option name="push-file" key="CtsRootVerifierProviderOverlay.apk" value="/product/overlay/CtsRootVerifierProviderOverlay.apk" />
         <option name="push-file" key="CtsRootVerifierApp.apk" value="/system/priv-app/CtsRootVerifierApp/CtsRootVerifierApp.apk" />

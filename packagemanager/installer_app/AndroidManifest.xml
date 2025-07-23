@@ -15,7 +15,8 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="android.content.pm.cts_root.installerapp" >
+        package="android.content.pm.cts_root.installerapp"
+        emergencyInstaller="android.content.pm.cts_root.emergencyinstallerapp" >
     <application android:label="Installer App">
         <activity
             android:exported="true"
