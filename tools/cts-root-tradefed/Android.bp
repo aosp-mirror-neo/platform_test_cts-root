@@ -31,6 +31,12 @@ tradefed_binary_host {
     version: "1.0",
     static_libs: [
         "cts-root-resources",
-        "cts-tradefed-harness"
+        "cts-tradefed-harness",
     ],
+}
+
+compatibility_test_suite_package {
+    name: "cts_root",
+    tradefed: "cts-root-tradefed",
+    readme: ":cts-root-readme",
 }
