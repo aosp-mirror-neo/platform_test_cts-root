@@ -32,6 +32,9 @@ java_defaults {
     static_libs: [
         "CtsRootDeveloperVerificationUtils",
     ],
+    package_splits: [
+        "mdpi-v4",
+    ],
 }
 
 android_test_helper_app {

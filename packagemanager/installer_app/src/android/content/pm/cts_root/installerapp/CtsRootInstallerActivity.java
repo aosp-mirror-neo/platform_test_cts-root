@@ -24,6 +24,7 @@ import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPON
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_APK_PATH;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_RESULT_INTENT;
+import static android.content.pm.cts_root.utils.Constants.EXTRA_IS_SPLIT_INSTALL;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -51,9 +52,21 @@ public class CtsRootInstallerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        PackageInstaller.SessionParams params =
-                new PackageInstaller.SessionParams(
-                        PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+        boolean isSplitInstall = getIntent().getBooleanExtra(EXTRA_IS_SPLIT_INSTALL, false);
+        PackageInstaller.SessionParams params;
+        if (!isSplitInstall) {
+            params = new PackageInstaller.SessionParams(
+                    PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+        } else {
+            params = new PackageInstaller.SessionParams(
+                    PackageInstaller.SessionParams.MODE_INHERIT_EXISTING);
+            params.setDontKillApp(true);
+        }
+
+        String packageName = getIntent().getStringExtra(EXTRA_INSTALL_PACKAGE_NAME);
+        if (packageName != null) {
+            params.setAppPackageName(packageName);
+        }
 
         String extensionResponseKey = getIntent().getStringExtra(EXTRA_EXTENSION_RESPONSE_KEY);
         if (extensionResponseKey != null) {
@@ -62,17 +75,14 @@ public class CtsRootInstallerActivity extends Activity {
             extensionParams.putString(extensionResponseKey, "");
             params.setExtensionParams(extensionParams);
         }
-        String packageName = getIntent().getStringExtra(EXTRA_INSTALL_PACKAGE_NAME);
-        if (packageName != null) {
-            params.setAppPackageName(packageName);
-        }
+
         String apkPath = getIntent().getStringExtra(EXTRA_INSTALL_APK_PATH);
 
         PackageInstaller pi = getApplicationContext().getPackageManager().getPackageInstaller();
         try {
             final int sessionId = pi.createSession(params);
             PackageInstaller.Session session = pi.openSession(sessionId);
-            writeFileToSession(session, apkPath);
+            writeFileToSession(session, apkPath, isSplitInstall);
             LocalIntentSender sender = new LocalIntentSender();
             session.commit(sender.getIntentSender());
         } catch (Exception e) {
@@ -126,11 +136,12 @@ public class CtsRootInstallerActivity extends Activity {
         }
     }
 
-    private static void writeFileToSession(PackageInstaller.Session session, String apkPath)
-            throws IOException {
+    private static void writeFileToSession(PackageInstaller.Session session, String apkPath,
+            boolean isSplitInstall) throws IOException {
         final File apkFile = new File(apkPath);
         try (
-                OutputStream os = session.openWrite("base.apk", 0, apkFile.length());
+                OutputStream os = session.openWrite(
+                        isSplitInstall ? "split_config.mdpi" : "base.apk", 0, apkFile.length());
                 InputStream is = new FileInputStream(apkFile)) {
             writeFullStream(is, os);
         }

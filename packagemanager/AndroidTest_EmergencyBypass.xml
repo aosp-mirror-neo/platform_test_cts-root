@@ -39,6 +39,7 @@
         <!-- Push the APKs to the data partition and prepare for the bypass test. -->
         <option name="push-file" key="CtsRootVerifierApp.apk" value="/data/local/tmp/cts-root/CtsRootVerifierApp.apk" />
         <option name="push-file" key="CtsRootPrivInstallerAppTarget36.apk" value="/data/local/tmp/cts-root/CtsRootPrivInstallerAppTarget36.apk" />
+        <option name="push-file" key="CtsRootPrivInstallerAppTarget36_mdpi-v4.apk" value="/data/local/tmp/cts-root/CtsRootPrivInstallerAppTarget36_mdpi-v4.apk" />
         <option name="push-file" key="CtsRootEmergencyInstallerApp.apk" value="/data/local/tmp/cts-root/CtsRootEmergencyInstallerApp.apk" />
         <option name="push-file" key="CtsRootEmptyTestApp.apk" value="/data/local/tmp/cts-root/CtsRootEmptyTestApp.apk" />
         <option name="cleanup" value="true" />

@@ -36,6 +36,7 @@ public class Constants {
     // Test -> Installer
     public static final String EXTRA_EXTENSION_RESPONSE_KEY = "extra-extension-response-key";
     public static final String EXTRA_INSTALL_APK_PATH = "extra-install-apk-path";
+    public static final String EXTRA_IS_SPLIT_INSTALL = "extra-is-split-install";
     public static final String EXTRA_INSTALL_PACKAGE_NAME = "extra-install-package-name";
     // Test -> Verifier
     public static final String EXTRA_EXTENSION_RESPONSE_VALUE = "extra-extension-response-value";
