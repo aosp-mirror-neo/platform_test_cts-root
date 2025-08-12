@@ -27,6 +27,7 @@ import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPON
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_APK_PATH;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_RESULT_INTENT;
+import static android.content.pm.cts_root.utils.Constants.EXTRA_IS_SPLIT_INSTALL;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_REJECT_MESSAGE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_SESSION_VERIFICATION_POLICY_OVERRIDE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_TEST_MODE;
@@ -37,6 +38,7 @@ import static android.content.pm.cts_root.utils.Utils.isLowRamDevice;
 import static android.content.pm.cts_root.utils.Utils.setDefaultVerificationPolicy;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -195,16 +197,16 @@ public abstract class DeveloperVerificationTestBase {
 
     private void configureAndLaunchInstaller(String installerPackageName,
             @Nullable String extensionResponseKey, @NonNull String apkPath,
-            @NonNull String packageName) {
+            @NonNull String packageName, boolean isSplitInstall) {
         // Start the installer app to install a test app at the given path and listen for results
         sContext.startActivity(
                 createLaunchInstallerIntent(installerPackageName, extensionResponseKey, apkPath,
-                        packageName));
+                        packageName, isSplitInstall));
     }
 
     private static Intent createLaunchInstallerIntent(String installerPackageName,
             @Nullable String extensionResponseKey, @NonNull String apkPath,
-            @NonNull String packageName) {
+            @NonNull String packageName, boolean isSplitInstall) {
         Intent intent = new Intent("cts_root.action.LAUNCH_INSTALLER");
         intent.setPackage(installerPackageName);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -214,6 +216,7 @@ public abstract class DeveloperVerificationTestBase {
         }
         intent.putExtra(EXTRA_INSTALL_APK_PATH, apkPath);
         intent.putExtra(EXTRA_INSTALL_PACKAGE_NAME, packageName);
+        intent.putExtra(EXTRA_IS_SPLIT_INSTALL, isSplitInstall);
         return intent;
     }
 
@@ -291,7 +294,8 @@ public abstract class DeveloperVerificationTestBase {
                 extensionResponseValueExpected, testParams.getSessionPolicyOverride());
         // Launch the installer to install a package via the Session APIs
         configureAndLaunchInstaller(testParams.getInstallerPackageName(),
-                extensionResponseKeyExpected, testParams.getApkPath(), testParams.getPackageName());
+                extensionResponseKeyExpected, testParams.getApkPath(), testParams.getPackageName(),
+                testParams.isSplitInstall());
         if (testParams.isInstallConfirmationExpected()) {
             // For a non-privileged installer, verify that the first user action requested was for
             // the install confirmation.
@@ -316,7 +320,9 @@ public abstract class DeveloperVerificationTestBase {
         final Intent userActionIntentReceived = installerResultReceived.getParcelableExtra(
                 Intent.EXTRA_INTENT, Intent.class);
         // Verify the bundle received by the installer for the installation result
-        assertThat(statusCodeReceived).isEqualTo(testParams.getStatusCodeExpected());
+        assertWithMessage(
+                "Install result mismatch. Received error message: " + errorMessageReceived)
+                .that(statusCodeReceived).isEqualTo(testParams.getStatusCodeExpected());
         assertThat(verificationFailureReasonReceived).isEqualTo(
                 testParams.getVerificationFailureReasonExpected());
         if (testParams.getErrorMessageExpected() != null) {
@@ -385,13 +391,15 @@ public abstract class DeveloperVerificationTestBase {
         private final boolean mIsInstallConfirmationExpected;
         private final String mApkPath;
         private final String mPackageName;
+        private final boolean mIsSplitInstall;
 
         protected TestParams(String installerPackageName, int verifierMode,
                 String verifierRejectMessage, int statusCodeExpected,
                 int verificationFailureReasonExpected, String errorMessageExpected,
                 Pair<String, String> extensionResponseKeyValuePairExpected,
                 boolean hasUserActionIntentExpected, int sessionPolicyOverride,
-                boolean isInstallConfirmationExpected, String apkPath, String packageName) {
+                boolean isInstallConfirmationExpected, String apkPath, String packageName,
+                boolean isSplitInstall) {
             mInstallerPackageName = installerPackageName;
             mVerifierMode = verifierMode;
             mVerifierRejectMessage = verifierRejectMessage;
@@ -404,6 +412,7 @@ public abstract class DeveloperVerificationTestBase {
             mIsInstallConfirmationExpected = isInstallConfirmationExpected;
             mApkPath = apkPath;
             mPackageName = packageName;
+            mIsSplitInstall = isSplitInstall;
         }
 
         public String getInstallerPackageName() {
@@ -453,6 +462,10 @@ public abstract class DeveloperVerificationTestBase {
             return mPackageName;
         }
 
+        public boolean isSplitInstall() {
+            return mIsSplitInstall;
+        }
+
         static class TestParamsBuilder {
             private String mInstallerPackageName = null;
             @Constants.Mode
@@ -471,6 +484,7 @@ public abstract class DeveloperVerificationTestBase {
 
             private String mApkPath = EMPTY_TEST_APK;
             private String mPackageName = EMPTY_TEST_PACKAGE_NAME;
+            private boolean mIsSplitInstall = false;
 
             public TestParamsBuilder setInstallerPackageName(String installerPackageName) {
                 this.mInstallerPackageName = installerPackageName;
@@ -538,6 +552,11 @@ public abstract class DeveloperVerificationTestBase {
                 return this;
             }
 
+            public TestParamsBuilder setSplitInstall(boolean isSplitInstall) {
+                this.mIsSplitInstall = isSplitInstall;
+                return this;
+            }
+
             public TestParams build() {
                 return new TestParams(this.mInstallerPackageName,
                         this.mVerifierMode, this.mVerifierRejectMessage, this.mStatusCodeExpected,
@@ -545,7 +564,7 @@ public abstract class DeveloperVerificationTestBase {
                         this.mExtensionResponseKeyValuePairExpected,
                         this.mHasUserActionIntentExpected,
                         this.mSessionPolicyOverride, this.mIsInstallConfirmationExpected,
-                        this.mApkPath, this.mPackageName);
+                        this.mApkPath, this.mPackageName, this.mIsSplitInstall);
             }
         }
     }
