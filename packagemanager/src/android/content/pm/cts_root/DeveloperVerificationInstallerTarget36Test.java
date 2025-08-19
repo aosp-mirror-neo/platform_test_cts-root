@@ -18,7 +18,6 @@ package android.content.pm.cts_root;
 import static android.content.pm.cts_root.utils.Constants.MODE_CRASH;
 import static android.content.pm.cts_root.utils.Constants.MODE_INCOMPLETE_NETWORK_UNAVAILABLE;
 import static android.content.pm.cts_root.utils.Constants.MODE_INCOMPLETE_UNKNOWN;
-import static android.content.pm.cts_root.utils.Constants.MODE_LITE;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT_WITH_EXTENSION_RESPONSE;
 import static android.content.pm.cts_root.utils.Constants.MODE_TIMEOUT;
@@ -101,20 +100,6 @@ public class DeveloperVerificationInstallerTarget36Test
     protected TestParams getInstallWithVerifierIncompleteNetworkUnavailableTestParams() {
         TestParams.TestParamsBuilder testParamsBuilder = getTestParamsBuilder()
                 .setVerifierMode(MODE_INCOMPLETE_NETWORK_UNAVAILABLE);
-        if (sDefaultPolicy == PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE) {
-            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS);
-        } else {
-            testParamsBuilder
-                    .setStatusCodeExpected(PackageInstaller.STATUS_PENDING_USER_ACTION)
-                    .setHasUserActionIntentExpected(true);
-        }
-        return testParamsBuilder.build();
-    }
-
-    @Override
-    protected TestParams getInstallWithVerifierLiteTestParams() {
-        TestParams.TestParamsBuilder testParamsBuilder = getTestParamsBuilder()
-                .setVerifierMode(MODE_LITE);
         if (sDefaultPolicy == PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE) {
             testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS);
         } else {
