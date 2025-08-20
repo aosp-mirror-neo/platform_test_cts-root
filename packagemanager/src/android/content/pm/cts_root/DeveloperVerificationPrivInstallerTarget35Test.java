@@ -18,7 +18,6 @@ package android.content.pm.cts_root;
 import static android.content.pm.cts_root.utils.Constants.MODE_CRASH;
 import static android.content.pm.cts_root.utils.Constants.MODE_INCOMPLETE_NETWORK_UNAVAILABLE;
 import static android.content.pm.cts_root.utils.Constants.MODE_INCOMPLETE_UNKNOWN;
-import static android.content.pm.cts_root.utils.Constants.MODE_LITE;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT_WITH_EXTENSION_RESPONSE;
 import static android.content.pm.cts_root.utils.Constants.MODE_TIMEOUT;
@@ -129,24 +128,6 @@ public class DeveloperVerificationPrivInstallerTarget35Test
                                     .DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE)
                     .setErrorMessageExpected("INSTALL_FAILED_VERIFICATION_FAILURE: "
                             + "Verification cannot be completed because of unavailable network.")
-                    .setHasUserActionIntentExpected(true);
-        }
-        return testParamsBuilder.build();
-    }
-
-    @Override
-    protected TestParams getInstallWithVerifierLiteTestParams() {
-        TestParams.TestParamsBuilder testParamsBuilder = getTestParamsBuilder()
-                .setVerifierMode(MODE_LITE);
-        if (sDefaultPolicy == PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE) {
-            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS);
-        } else {
-            testParamsBuilder
-                    .setStatusCodeExpected(PackageInstaller.STATUS_FAILURE_ABORTED)
-                    .setVerificationFailureReasonExpected(
-                            PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN)
-                    .setErrorMessageExpected("INSTALL_FAILED_VERIFICATION_FAILURE: "
-                            + "This package could only be verified with lite verification.")
                     .setHasUserActionIntentExpected(true);
         }
         return testParamsBuilder.build();

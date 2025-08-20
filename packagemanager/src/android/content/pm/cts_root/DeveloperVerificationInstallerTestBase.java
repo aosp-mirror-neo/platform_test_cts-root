@@ -18,6 +18,7 @@ package android.content.pm.cts_root;
 
 import static android.content.pm.cts_root.utils.Constants.INSTALLER_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Constants.MODE_BYPASS;
+import static android.content.pm.cts_root.utils.Constants.MODE_LITE;
 import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT_WITH_POLICY_OVERRIDE;
 import static android.content.pm.cts_root.utils.Constants.PRIV_INSTALLER_PACKAGE_NAME;
@@ -72,7 +73,6 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
     protected abstract TestParams getInstallWhenVerifierTimeoutTestParams();
     protected abstract TestParams getInstallWhenVerifierIncompleteUnknownTestParams();
     protected abstract TestParams getInstallWithVerifierIncompleteNetworkUnavailableTestParams();
-    protected abstract TestParams getInstallWithVerifierLiteTestParams();
     protected abstract TestParams getInstallWithVerifierRejectTestParams();
     protected abstract TestParams getInstallWithVerifierRejectWithExtensionResponseTestParams();
 
@@ -83,6 +83,17 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
     public void testInstallWithVerifierPass() throws Exception {
         TestParams testParams = getTestParamsBuilder()
                 .setVerifierMode(MODE_PASS)
+                .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
+                .build();
+        installAndVerifyResults(testParams);
+    }
+
+    // When the verifier returns PASS with LITE=true, regardless of the default policy and the
+    // target sdk version of the installer, the installation should always go through.
+    @Test
+    public void testInstallWithVerifierPassLite() throws Exception {
+        TestParams testParams = getTestParamsBuilder()
+                .setVerifierMode(MODE_LITE)
                 .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
                 .build();
         installAndVerifyResults(testParams);
@@ -122,12 +133,6 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
     public void testInstallWithVerifierIncompleteNetworkUnavailable()
             throws Exception {
         TestParams testParams = getInstallWithVerifierIncompleteNetworkUnavailableTestParams();
-        installAndVerifyResults(testParams);
-    }
-
-    @Test
-    public void testInstallWithVerifierLite() throws Exception {
-        TestParams testParams = getInstallWithVerifierLiteTestParams();
         installAndVerifyResults(testParams);
     }
 
