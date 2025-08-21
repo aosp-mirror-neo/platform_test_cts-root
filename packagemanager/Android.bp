@@ -77,30 +77,30 @@ java_library {
 }
 
 android_test {
-    name: "CtsRootDeveloperVerificationPrivInstallerTarget36TestCases",
+    name: "CtsRootDeveloperVerificationPrivInstallerTarget37TestCases",
     defaults: ["cts_root_developer_verification_defaults"],
     srcs: [
-        "src/**/DeveloperVerificationInstallerTarget36Test.java",
+        "src/**/DeveloperVerificationInstallerTarget37Test.java",
     ],
     data: [
-        ":CtsRootPrivInstallerAppTarget36",
+        ":CtsRootPrivInstallerAppTarget37",
     ],
-    test_config_template: "AndroidTest_PrivTemplate36.xml",
+    test_config_template: "AndroidTest_PrivTemplate37.xml",
 }
 
-// Non-privileged installer targeting 36 behaves the same as the privilged installer targeting 36
+// Non-privileged installer targeting 37 behaves the same as the privilged installer targeting 37
 // regarding the verification result. Therefore, the two test modules use the same test methods, but
 // differ in the way the installer is installed.
 android_test {
-    name: "CtsRootDeveloperVerificationInstallerTarget36TestCases",
+    name: "CtsRootDeveloperVerificationInstallerTarget37TestCases",
     defaults: ["cts_root_developer_verification_defaults"],
     srcs: [
-        "src/**/DeveloperVerificationInstallerTarget36Test.java",
+        "src/**/DeveloperVerificationInstallerTarget37Test.java",
     ],
     data: [
-        ":CtsRootInstallerAppTarget36",
+        ":CtsRootInstallerAppTarget37",
     ],
-    test_config_template: "AndroidTest_Template36.xml",
+    test_config_template: "AndroidTest_Template37.xml",
 }
 
 android_test {
@@ -157,7 +157,7 @@ android_test {
     ],
     data: [
         ":CtsRootEmergencyInstallerApp",
-        ":CtsRootPrivInstallerAppTarget36",
+        ":CtsRootPrivInstallerAppTarget37",
     ],
     test_config_template: "AndroidTest_EmergencyBypass.xml",
 }

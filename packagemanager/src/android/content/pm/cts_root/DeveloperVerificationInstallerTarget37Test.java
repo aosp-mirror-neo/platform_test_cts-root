@@ -31,12 +31,12 @@ import android.os.Build;
 import android.util.Pair;
 
 /**
- * Both privileged and non-privileged installer targeting SDK 36+ behave the same with regard to
+ * Both privileged and non-privileged installer targeting SDK 37+ behave the same with regard to
  * verification results, therefore they share the same test class. Notice that it is not the case
- * for installers targeting SDK 35 and below, because they behave differently according to their
+ * for installers targeting SDK 36 and below, because they behave differently according to their
  * privileged or non-privileged status.
  */
-public class DeveloperVerificationInstallerTarget36Test
+public class DeveloperVerificationInstallerTarget37Test
         extends DeveloperVerificationInstallerTestBase {
 
     static {
@@ -46,7 +46,7 @@ public class DeveloperVerificationInstallerTarget36Test
             // Check that the target sdk of the installer matches with the expectation
             assertThat(installerInfo).isNotNull();
             assertThat(installerInfo.targetSdkVersion).isGreaterThan(
-                    Build.VERSION_CODES.VANILLA_ICE_CREAM);
+                    Build.VERSION_CODES.BAKLAVA);
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
         }

@@ -35,12 +35,12 @@ import java.util.Arrays;
 public class DeveloperVerificationEmergencyBypassTest extends DeveloperVerificationTestBase {
     private static final String VERIFIER_APK_PATH = APK_PATH_BASE + "CtsRootVerifierApp.apk";
     private static final String PRIV_INSTALLER_APK_PATH =
-            APK_PATH_BASE + "CtsRootPrivInstallerAppTarget36.apk";
+            APK_PATH_BASE + "CtsRootPrivInstallerAppTarget37.apk";
     private static final String EMERGENCY_INSTALLER_APK_PATH =
             APK_PATH_BASE + "CtsRootEmergencyInstallerApp.apk";
 
     private static final String PRIV_INSTALLER_SPLIT_APK =
-            APK_PATH_BASE + "CtsRootPrivInstallerAppTarget36_mdpi-v4.apk";
+            APK_PATH_BASE + "CtsRootPrivInstallerAppTarget37_mdpi-v4.apk";
 
 
     /**
