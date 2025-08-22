@@ -61,10 +61,10 @@ android_test_helper_app {
 }
 
 android_test_helper_app {
-    name: "CtsRootPrivInstallerAppTarget35",
+    name: "CtsRootPrivInstallerAppTarget36",
     defaults: ["cts_root_installer_app_defaults"],
     min_sdk_version: "33",
-    target_sdk_version: "35",
+    target_sdk_version: "36",
     package_name: "android.content.pm.cts_root.privinstallerapp",
     manifest: "AndroidManifest.xml",
     additional_manifests: [
@@ -73,10 +73,10 @@ android_test_helper_app {
 }
 
 android_test_helper_app {
-    name: "CtsRootInstallerAppTarget35",
+    name: "CtsRootInstallerAppTarget36",
     defaults: ["cts_root_installer_app_defaults"],
     min_sdk_version: "33",
-    target_sdk_version: "35",
+    target_sdk_version: "36",
     manifest: "AndroidManifest.xml",
     additional_manifests: [
         "AndroidManifestInstallerPermission.xml",

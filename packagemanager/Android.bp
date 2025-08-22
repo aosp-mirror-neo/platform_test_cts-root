@@ -104,27 +104,27 @@ android_test {
 }
 
 android_test {
-    name: "CtsRootDeveloperVerificationPrivInstallerTarget35TestCases",
+    name: "CtsRootDeveloperVerificationPrivInstallerTarget36TestCases",
     defaults: ["cts_root_developer_verification_defaults"],
     srcs: [
-        "src/**/DeveloperVerificationPrivInstallerTarget35Test.java",
+        "src/**/DeveloperVerificationPrivInstallerTarget36Test.java",
     ],
     data: [
-        ":CtsRootPrivInstallerAppTarget35",
+        ":CtsRootPrivInstallerAppTarget36",
     ],
-    test_config_template: "AndroidTest_PrivTemplate35.xml",
+    test_config_template: "AndroidTest_PrivTemplate36.xml",
 }
 
 android_test {
-    name: "CtsRootDeveloperVerificationInstallerTarget35TestCases",
+    name: "CtsRootDeveloperVerificationInstallerTarget36TestCases",
     defaults: ["cts_root_developer_verification_defaults"],
     srcs: [
-        "src/**/DeveloperVerificationInstallerTarget35Test.java",
+        "src/**/DeveloperVerificationInstallerTarget36Test.java",
     ],
     data: [
-        ":CtsRootInstallerAppTarget35",
+        ":CtsRootInstallerAppTarget36",
     ],
-    test_config_template: "AndroidTest_Template35.xml",
+    test_config_template: "AndroidTest_Template36.xml",
 }
 
 android_test {

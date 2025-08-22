@@ -29,7 +29,7 @@
         <option name="push-file" key="developer-verification-cts-root-permission.xml" value="/system/etc/permissions/developer-verification-cts-root-permission.xml" />
         <option name="push-file" key="CtsRootEmptyTestApp.apk" value="/data/local/tmp/cts-root/CtsRootEmptyTestApp.apk" />
         <!-- Install privileged installer app in the system partition. -->
-        <option name="push-file" key="CtsRootPrivInstallerAppTarget35.apk" value="/system/priv-app/CtsRootPrivInstallerAppTarget35/CtsRootPrivInstallerAppTarget35.apk" />
+        <option name="push-file" key="CtsRootPrivInstallerAppTarget36.apk" value="/system/priv-app/CtsRootPrivInstallerAppTarget36/CtsRootPrivInstallerAppTarget36.apk" />
         <option name="cleanup" value="true" />
         <option name="remount-system" value="true" />
     </target_preparer>
