@@ -93,7 +93,7 @@ public class CtsRootVerifierActivity extends Activity {
                     .apply();
         }
         // Set extension response value if specified
-        if (mode == MODE_REJECT_WITH_EXTENSION_RESPONSE) {
+        if (intent.hasExtra(EXTRA_EXTENSION_RESPONSE_VALUE)) {
             String extensionResponseValue = intent.getStringExtra(EXTRA_EXTENSION_RESPONSE_VALUE);
             Log.i(TAG, "Extension response value override requested by automated tests: "
                     + extensionResponseValue);

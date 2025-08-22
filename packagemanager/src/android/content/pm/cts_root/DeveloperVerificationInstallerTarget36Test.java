@@ -28,6 +28,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.util.Pair;
 
 /**
  * Non privileged installer targeting 36 and below will request user confirmation most of the time
@@ -125,7 +126,9 @@ public class DeveloperVerificationInstallerTarget36Test
         TestParams.TestParamsBuilder testParamsBuilder = getTestParamsBuilder()
                 .setVerifierMode(MODE_REJECT_WITH_EXTENSION_RESPONSE);
         if (sDefaultPolicy == PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE) {
-            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS);
+            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
+                    .setExtensionResponseKeyValuePairExpected(
+                            new Pair<>(EXTENSION_RESPONSE_KEY, EXTENSION_RESPONSE_VALUE));
         } else {
             testParamsBuilder
                     .setStatusCodeExpected(PackageInstaller.STATUS_PENDING_USER_ACTION)

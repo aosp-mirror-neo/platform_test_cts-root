@@ -83,7 +83,8 @@ public class CtsRootVerifierService extends DeveloperVerifierService {
             int policyOverride = getPolicyOverride();
             session.setPolicy(policyOverride);
         }
-
+        final PersistableBundle extensionResponse = session.getExtensionParams();
+        final String extensionResponseValue = getExtensionResponseValue();
         switch (testMode) {
             case MODE_CRASH:
                 // Stop this service to simulate a crash.
@@ -116,11 +117,11 @@ public class CtsRootVerifierService extends DeveloperVerifierService {
                                 .setVerified(false)
                                 .setFailureMessage(getRejectMessage())
                                 .build();
-                PersistableBundle extensionResponse = session.getExtensionParams();
-                final String extensionResponseValue = getExtensionResponseValue();
-                // For every key in the extensionParam, set its value as expected
-                for (String key : extensionResponse.keySet()) {
-                    extensionResponse.putString(key, extensionResponseValue);
+                if (!extensionResponseValue.isEmpty()) {
+                    // For every key in the extensionParam, set its value as expected
+                    for (String key : extensionResponse.keySet()) {
+                        extensionResponse.putString(key, extensionResponseValue);
+                    }
                 }
                 session.reportVerificationComplete(status, extensionResponse);
                 Log.i(TAG, "Reported verification reject with extension bundle.");
@@ -146,7 +147,13 @@ public class CtsRootVerifierService extends DeveloperVerifierService {
             default:
                 // Immediately return success
                 status = new DeveloperVerificationStatus.Builder().setVerified(true).build();
-                session.reportVerificationComplete(status);
+                if (!extensionResponseValue.isEmpty()) {
+                    // For every key in the extensionParam, set its value as expected
+                    for (String key : extensionResponse.keySet()) {
+                        extensionResponse.putString(key, extensionResponseValue);
+                    }
+                }
+                session.reportVerificationComplete(status, extensionResponse);
                 Log.i(TAG, "Reported verification pass.");
                 break;
         }

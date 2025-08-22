@@ -135,7 +135,9 @@ public class DeveloperVerificationInstallerTarget37Test
         TestParams.TestParamsBuilder testParamsBuilder = getTestParamsBuilder()
                 .setVerifierMode(MODE_REJECT_WITH_EXTENSION_RESPONSE);
         if (sDefaultPolicy == PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE) {
-            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS);
+            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
+                    .setExtensionResponseKeyValuePairExpected(
+                            new Pair<>(EXTENSION_RESPONSE_KEY, EXTENSION_RESPONSE_VALUE));
         } else {
             testParamsBuilder.setVerifierRejectMessage(REJECT_MESSAGE)
                     .setExtensionResponseKeyValuePairExpected(
