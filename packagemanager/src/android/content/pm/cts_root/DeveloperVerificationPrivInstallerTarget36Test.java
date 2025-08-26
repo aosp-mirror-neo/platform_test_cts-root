@@ -31,10 +31,10 @@ import android.os.Build;
 import android.util.Pair;
 
 /**
- * Privileged installer targeting 35 will only get a failure status code and the user action intent
+ * Privileged installer targeting 36 will only get a failure status code and the user action intent
  * as an extra in the result bundle.
  */
-public class DeveloperVerificationPrivInstallerTarget35Test
+public class DeveloperVerificationPrivInstallerTarget36Test
         extends DeveloperVerificationInstallerTestBase {
 
     static {
@@ -43,8 +43,7 @@ public class DeveloperVerificationPrivInstallerTarget35Test
                     sInstallerPackageName, /* flags= */ 0).applicationInfo;
             // Check that the target sdk of the installer matches with the expectation
             assertThat(installerInfo).isNotNull();
-            assertThat(installerInfo.targetSdkVersion).isEqualTo(
-                    Build.VERSION_CODES.VANILLA_ICE_CREAM);
+            assertThat(installerInfo.targetSdkVersion).isEqualTo(Build.VERSION_CODES.BAKLAVA);
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -158,7 +157,9 @@ public class DeveloperVerificationPrivInstallerTarget35Test
         TestParams.TestParamsBuilder testParamsBuilder = getTestParamsBuilder()
                 .setVerifierMode(MODE_REJECT_WITH_EXTENSION_RESPONSE);
         if (sDefaultPolicy == PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE) {
-            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS);
+            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
+                    .setExtensionResponseKeyValuePairExpected(
+                            new Pair<>(EXTENSION_RESPONSE_KEY, EXTENSION_RESPONSE_VALUE));
         } else {
             testParamsBuilder.setVerifierRejectMessage(REJECT_MESSAGE)
                     .setExtensionResponseKeyValuePairExpected(

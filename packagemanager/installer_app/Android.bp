@@ -38,6 +38,29 @@ java_defaults {
 }
 
 android_test_helper_app {
+    name: "CtsRootPrivInstallerAppTarget37",
+    defaults: ["cts_root_installer_app_defaults"],
+    min_sdk_version: "33",
+    target_sdk_version: "37",
+    package_name: "android.content.pm.cts_root.privinstallerapp",
+    manifest: "AndroidManifest.xml",
+    additional_manifests: [
+        "AndroidManifestPrivInstallerPermission.xml",
+    ],
+}
+
+android_test_helper_app {
+    name: "CtsRootInstallerAppTarget37",
+    defaults: ["cts_root_installer_app_defaults"],
+    min_sdk_version: "33",
+    target_sdk_version: "37",
+    manifest: "AndroidManifest.xml",
+    additional_manifests: [
+        "AndroidManifestInstallerPermission.xml",
+    ],
+}
+
+android_test_helper_app {
     name: "CtsRootPrivInstallerAppTarget36",
     defaults: ["cts_root_installer_app_defaults"],
     min_sdk_version: "33",
@@ -61,33 +84,10 @@ android_test_helper_app {
 }
 
 android_test_helper_app {
-    name: "CtsRootPrivInstallerAppTarget35",
-    defaults: ["cts_root_installer_app_defaults"],
-    min_sdk_version: "33",
-    target_sdk_version: "35",
-    package_name: "android.content.pm.cts_root.privinstallerapp",
-    manifest: "AndroidManifest.xml",
-    additional_manifests: [
-        "AndroidManifestPrivInstallerPermission.xml",
-    ],
-}
-
-android_test_helper_app {
-    name: "CtsRootInstallerAppTarget35",
-    defaults: ["cts_root_installer_app_defaults"],
-    min_sdk_version: "33",
-    target_sdk_version: "35",
-    manifest: "AndroidManifest.xml",
-    additional_manifests: [
-        "AndroidManifestInstallerPermission.xml",
-    ],
-}
-
-android_test_helper_app {
     name: "CtsRootEmergencyInstallerApp",
     defaults: ["cts_root_installer_app_defaults"],
     min_sdk_version: "33",
-    target_sdk_version: "36",
+    target_sdk_version: "37",
     manifest: "AndroidManifest.xml",
     package_name: "android.content.pm.cts_root.emergencyinstallerapp",
     additional_manifests: [

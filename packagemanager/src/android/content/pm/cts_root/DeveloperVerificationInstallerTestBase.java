@@ -28,6 +28,7 @@ import static com.google.common.truth.Truth.assertThat;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
+import android.util.Pair;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -84,6 +85,17 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
         TestParams testParams = getTestParamsBuilder()
                 .setVerifierMode(MODE_PASS)
                 .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
+                .build();
+        installAndVerifyResults(testParams);
+    }
+
+    @Test
+    public void testInstallWithExtensionResponseWithVerifierPass() throws Exception {
+        TestParams testParams = getTestParamsBuilder()
+                .setVerifierMode(MODE_PASS)
+                .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
+                .setExtensionResponseKeyValuePairExpected(
+                        new Pair<>(EXTENSION_RESPONSE_KEY, EXTENSION_RESPONSE_VALUE))
                 .build();
         installAndVerifyResults(testParams);
     }
