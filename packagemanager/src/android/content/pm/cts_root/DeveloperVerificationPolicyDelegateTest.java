@@ -106,13 +106,14 @@ public class DeveloperVerificationPolicyDelegateTest {
 
     @Test
     public void testDelegateCanSetAndGetPolicy() throws Exception {
+        final int userId = sContext.getUserId();
         // Remember the old policy value
         final int oldPolicy = getDefaultVerificationPolicy(sContext);
         final int newPolicy = getNextPolicyForTest(oldPolicy);
-        setDefaultVerificationPolicy(sContext, newPolicy, DEFAULT_TIMEOUT_MS);
+        setDefaultVerificationPolicy(sContext, newPolicy, userId, userId, DEFAULT_TIMEOUT_MS);
         assertThat(getDefaultVerificationPolicy(sContext)).isEqualTo(newPolicy);
         // Restore the old policy value
-        setDefaultVerificationPolicy(sContext, oldPolicy, DEFAULT_TIMEOUT_MS);
+        setDefaultVerificationPolicy(sContext, oldPolicy, userId, userId, DEFAULT_TIMEOUT_MS);
         assertThat(getDefaultVerificationPolicy(sContext)).isEqualTo(oldPolicy);
     }
 

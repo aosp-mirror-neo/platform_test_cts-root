@@ -26,6 +26,7 @@ import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPON
 import static android.content.pm.cts_root.utils.Constants.EXTRA_REJECT_MESSAGE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_SESSION_VERIFICATION_POLICY_OVERRIDE;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_TEST_MODE;
+import static android.content.pm.cts_root.utils.Constants.EXTRA_TEST_USER;
 import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT_WITH_EXTENSION_RESPONSE;
@@ -39,6 +40,8 @@ import static android.content.pm.cts_root.verifierapp.CtsRootVerifierService.PRE
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Process;
+import android.os.UserHandle;
 import android.util.Log;
 
 import androidx.preference.PreferenceManager;
@@ -49,8 +52,11 @@ public class CtsRootVerifierActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(TAG, "Verifier activity is launched on user " + Process.myUserHandle());
 
         Intent intent = getIntent();
+        UserHandle testUser = getIntent().getParcelableExtra(EXTRA_TEST_USER, UserHandle.class);
+
         if (ACTION_QUERY_DELEGATE.equals(intent.getAction())) {
             Log.i(TAG, "Query delegate request from automated tests");
             String delegatePackageName = "";
@@ -131,7 +137,9 @@ public class CtsRootVerifierActivity extends Activity {
         Intent broadcastIntent = new Intent(ACTION_MODE_SET);
         broadcastIntent.setFlags(Intent.FLAG_RECEIVER_FOREGROUND);
         broadcastIntent.putExtra(EXTRA_TEST_MODE, mode);
-        sendBroadcast(broadcastIntent);
+        // The test might be running on a different user than the verifier itself
+        Log.i(TAG, "Sending installation result to " + testUser);
+        sendBroadcastAsUser(broadcastIntent, testUser);
 
         finish();
     }

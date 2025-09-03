@@ -38,6 +38,7 @@ public class Constants {
     public static final String EXTRA_INSTALL_APK_PATH = "extra-install-apk-path";
     public static final String EXTRA_IS_SPLIT_INSTALL = "extra-is-split-install";
     public static final String EXTRA_INSTALL_PACKAGE_NAME = "extra-install-package-name";
+    public static final String EXTRA_TEST_USER = "extra-test-user";
     // Test -> Verifier
     public static final String EXTRA_EXTENSION_RESPONSE_VALUE = "extra-extension-response-value";
     public static final String ACTION_QUERY_DELEGATE = "android.content.pm.cts_root.QUERY_DELEGATE";

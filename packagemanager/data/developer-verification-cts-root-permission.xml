@@ -24,8 +24,13 @@
         <permission name="android.permission.INSTALL_PACKAGES" />
         <permission name="android.permission.INSTALL_PACKAGE_UPDATES" />
         <permission name="android.permission.INSTALL_SELF_UPDATES" />
+        <permission name="android.permission.INTERACT_ACROSS_USERS" />
     </privapp-permissions>
     <privapp-permissions package="android.content.pm.cts_root.verifierapp">
         <permission name="android.permission.DEVELOPER_VERIFICATION_AGENT" />
+        <permission name="android.permission.INTERACT_ACROSS_USERS" />
+    </privapp-permissions>
+    <privapp-permissions package="android.content.pm.cts_root.delegateapp">
+        <permission name="android.permission.INTERACT_ACROSS_USERS" />
     </privapp-permissions>
 </permissions>

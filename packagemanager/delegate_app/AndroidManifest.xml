@@ -16,6 +16,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         package="android.content.pm.cts_root.delegateapp" >
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS"/>
+
     <application android:label="Test Developer Verification Policy Delegate App">
         <activity
             android:exported="true"
