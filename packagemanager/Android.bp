@@ -161,3 +161,16 @@ android_test {
     ],
     test_config_template: "AndroidTest_EmergencyBypass.xml",
 }
+
+android_test {
+    name: "CtsRootDeveloperVerificationPrivInstallerMultiUserTestCases",
+    defaults: ["cts_root_developer_verification_defaults"],
+    srcs: [
+        "src/**/DeveloperVerificationInstallerMultiUserTest.java",
+    ],
+    data: [
+        ":CtsRootPrivInstallerAppTarget37",
+    ],
+    // Use the same setup as CtsRootDeveloperVerificationPrivInstallerTarget37TestCases
+    test_config_template: "AndroidTest_PrivTemplate37.xml",
+}

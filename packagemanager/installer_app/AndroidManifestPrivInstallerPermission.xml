@@ -20,4 +20,5 @@
     <uses-permission android:name="android.permission.INSTALL_PACKAGES"/>
     <uses-permission android:name="android.permission.INSTALL_PACKAGE_UPDATES"/>
     <uses-permission android:name="android.permission.INSTALL_SELF_UPDATES"/>
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS"/>
 </manifest>

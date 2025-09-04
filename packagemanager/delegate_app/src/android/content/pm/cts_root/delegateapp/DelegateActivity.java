@@ -19,11 +19,14 @@ package android.content.pm.cts_root.delegateapp;
 import static android.content.pm.cts_root.utils.Constants.ACTION_REPORT_POLICY_SET_RESULT;
 import static android.content.pm.cts_root.utils.Constants.ACTION_SET_POLICY;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_POLICY_VALUE;
+import static android.content.pm.cts_root.utils.Constants.EXTRA_TEST_USER;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInstaller;
 import android.os.Bundle;
+import android.os.Process;
+import android.os.UserHandle;
 import android.util.Log;
 
 public class DelegateActivity extends Activity {
@@ -35,13 +38,15 @@ public class DelegateActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
+        UserHandle testUser = getIntent().getParcelableExtra(EXTRA_TEST_USER, UserHandle.class);
         if (ACTION_SET_POLICY.equals(intent.getAction())) {
             int policy = intent.getIntExtra(EXTRA_POLICY_VALUE, INVALID_POLICY);
             if (policy == INVALID_POLICY) {
                 Log.i(TAG, "Received request to change the policy but the policy is invalid");
                 finish();
             }
-            Log.i(TAG, "Received request to change the policy to " + policy);
+            Log.i(TAG, "Received request to change the policy to " + policy
+                    + " for user " + Process.myUserHandle());
             PackageInstaller pi = getApplicationContext().getPackageManager().getPackageInstaller();
             try {
                 if (!pi.setDeveloperVerificationPolicy(policy)) {
@@ -56,7 +61,9 @@ public class DelegateActivity extends Activity {
             Intent broadcastIntent = new Intent(ACTION_REPORT_POLICY_SET_RESULT);
             broadcastIntent.setFlags(Intent.FLAG_RECEIVER_FOREGROUND);
             broadcastIntent.putExtra(EXTRA_POLICY_VALUE, pi.getDeveloperVerificationPolicy());
-            sendBroadcast(broadcastIntent);
+            // The test might be running on a different user than the installer itself
+            Log.i(TAG, "Sending policy set result to " + testUser);
+            sendBroadcastAsUser(broadcastIntent, testUser);
         }
         finish();
     }

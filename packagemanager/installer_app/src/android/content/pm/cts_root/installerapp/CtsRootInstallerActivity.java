@@ -25,6 +25,7 @@ import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_APK_PATH
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_RESULT_INTENT;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_IS_SPLIT_INSTALL;
+import static android.content.pm.cts_root.utils.Constants.EXTRA_TEST_USER;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -36,7 +37,9 @@ import android.content.IntentSender;
 import android.content.pm.PackageInstaller;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.os.Process;
 import android.os.SystemClock;
+import android.os.UserHandle;
 import android.util.Log;
 
 import java.io.File;
@@ -47,10 +50,13 @@ import java.io.OutputStream;
 
 public class CtsRootInstallerActivity extends Activity {
     private static final String TAG = CtsRootInstallerActivity.class.getSimpleName();
+    private static UserHandle sTestUser = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        UserHandle myUserHandle = Process.myUserHandle();
+        Log.i(TAG, "Installer is launched on user " + myUserHandle);
 
         boolean isSplitInstall = getIntent().getBooleanExtra(EXTRA_IS_SPLIT_INSTALL, false);
         PackageInstaller.SessionParams params;
@@ -78,6 +84,8 @@ public class CtsRootInstallerActivity extends Activity {
 
         String apkPath = getIntent().getStringExtra(EXTRA_INSTALL_APK_PATH);
 
+        sTestUser = getIntent().getParcelableExtra(EXTRA_TEST_USER, UserHandle.class);
+
         PackageInstaller pi = getApplicationContext().getPackageManager().getPackageInstaller();
         try {
             final int sessionId = pi.createSession(params);
@@ -85,6 +93,7 @@ public class CtsRootInstallerActivity extends Activity {
             writeFileToSession(session, apkPath, isSplitInstall);
             LocalIntentSender sender = new LocalIntentSender();
             session.commit(sender.getIntentSender());
+            Log.i(TAG, "Started app installation on user " + myUserHandle);
         } catch (Exception e) {
             Log.i(TAG, "Failed to install empty app", e);
         }
@@ -101,7 +110,9 @@ public class CtsRootInstallerActivity extends Activity {
             Intent i = new Intent(ACTION_INSTALLER_RESULT);
             i.setFlags(Intent.FLAG_RECEIVER_FOREGROUND);
             i.putExtra(EXTRA_INSTALL_RESULT_INTENT, intent);
-            sendBroadcast(i);
+            // The test might be running on a different user than the installer itself
+            Log.i(TAG, "Sending installation result to " + sTestUser);
+            sendBroadcastAsUser(i, sTestUser);
             // Don't finish listening if the result is for install confirmation
             // TODO: think of a better way to finish when it should
             final Intent extraIntent = intent.getParcelableExtra(

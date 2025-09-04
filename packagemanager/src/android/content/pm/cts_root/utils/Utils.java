@@ -20,15 +20,18 @@ import static android.content.pm.cts_root.utils.Constants.ACTION_REPORT_POLICY_S
 import static android.content.pm.cts_root.utils.Constants.ACTION_SET_POLICY;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_POLICY_VALUE;
 import static android.content.pm.cts_root.utils.Constants.DELEGATE_PACKAGE_NAME;
+import static android.content.pm.cts_root.utils.Constants.EXTRA_TEST_USER;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInstaller;
+import android.os.UserHandle;
 
 import com.android.compatibility.common.util.SystemUtil;
 
@@ -56,14 +59,15 @@ public class Utils {
      * Sets the default verification policy on the device via the policy delegate app.
      */
     public static void setDefaultVerificationPolicy(Context context,
-            @PackageInstaller.DeveloperVerificationPolicy int policy, long timeoutMs)
+            @PackageInstaller.DeveloperVerificationPolicy int policy, int sourceUserId,
+            int targetUserId, long timeoutMs)
             throws Exception {
-        requestDelegateAppToSetPolicy(context, policy, timeoutMs);
+        requestDelegateAppToSetPolicy(context, policy, sourceUserId, targetUserId, timeoutMs);
         assertThat(getDefaultVerificationPolicy(context)).isEqualTo(policy);
     }
 
     private static void requestDelegateAppToSetPolicy(
-            Context context, int newPolicy, long timeoutMs)
+            Context context, int newPolicy, int sourceUserId, int targetUserId, long timeoutMs)
             throws Exception {
         final CompletableFuture<Intent> setPolicyResult = new CompletableFuture<>();
         final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -84,7 +88,11 @@ public class Utils {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.addCategory(Intent.CATEGORY_DEFAULT);
             intent.putExtra(EXTRA_POLICY_VALUE, newPolicy);
-            context.startActivity(intent);
+            // Attach the user id of the test itself so the delegate app can send back the broadcast
+            intent.putExtra(EXTRA_TEST_USER, UserHandle.of(sourceUserId));
+            SystemUtil.runWithShellPermissionIdentity(() -> {
+                context.startActivityAsUser(intent, UserHandle.of(targetUserId));
+            }, Manifest.permission.INTERACT_ACROSS_USERS_FULL);
             // Wait to confirm that the delegate app has changed the policy
             assertThat(setPolicyResult.get(timeoutMs, TimeUnit.MILLISECONDS)
                     .getIntExtra(EXTRA_POLICY_VALUE, -100)).isEqualTo(newPolicy);
