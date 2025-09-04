@@ -163,14 +163,31 @@ android_test {
 }
 
 android_test {
-    name: "CtsRootDeveloperVerificationPrivInstallerMultiUserTestCases",
+    name: "CtsRootDeveloperVerificationWorkProfileTestCases",
     defaults: ["cts_root_developer_verification_defaults"],
     srcs: [
-        "src/**/DeveloperVerificationInstallerMultiUserTest.java",
+        "src/**/DeveloperVerificationMultiUserTestBase.java",
+        "src/**/DeveloperVerificationWorkProfileTest.java",
     ],
     data: [
         ":CtsRootPrivInstallerAppTarget37",
     ],
     // Use the same setup as CtsRootDeveloperVerificationPrivInstallerTarget37TestCases
     test_config_template: "AndroidTest_PrivTemplate37.xml",
+}
+
+android_test {
+    name: "CtsRootDeveloperVerificationSingletonVerifierWorkProfileTestCases",
+    defaults: ["cts_root_developer_verification_defaults"],
+    srcs: [
+        // Use the same test as CtsRootDeveloperVerificationWorkProfileTestCases.
+        // The only difference is that the verifier has a singleton service.
+        "src/**/DeveloperVerificationMultiUserTestBase.java",
+        "src/**/DeveloperVerificationWorkProfileTest.java",
+    ],
+    data: [
+        ":CtsRootPrivInstallerAppTarget37",
+        ":CtsRootSingletonVerifierApp",
+    ],
+    test_config_template: "AndroidTest_SingletonVerifier.xml",
 }

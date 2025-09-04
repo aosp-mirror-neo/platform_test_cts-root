@@ -93,7 +93,8 @@ public class CtsRootInstallerActivity extends Activity {
             writeFileToSession(session, apkPath, isSplitInstall);
             LocalIntentSender sender = new LocalIntentSender();
             session.commit(sender.getIntentSender());
-            Log.i(TAG, "Started app installation on user " + myUserHandle);
+            Log.i(TAG, "Started app installation on user " + myUserHandle
+                    + " sessionID=" + sessionId);
         } catch (Exception e) {
             Log.i(TAG, "Failed to install empty app", e);
         }

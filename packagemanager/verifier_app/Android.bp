@@ -54,3 +54,9 @@ android_test_helper_app {
     defaults: ["CtsRootVerifierApp_defaults"],
     manifest: "AndroidManifest_V3.xml",
 }
+
+android_test_helper_app {
+    name: "CtsRootSingletonVerifierApp",
+    defaults: ["CtsRootVerifierApp_defaults"],
+    manifest: "AndroidManifest_Singleton.xml",
+}

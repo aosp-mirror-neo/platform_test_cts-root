@@ -86,7 +86,7 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
                 .setVerifierMode(MODE_PASS)
                 .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     @Test
@@ -97,7 +97,7 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
                 .setExtensionResponseKeyValuePairExpected(
                         new Pair<>(EXTENSION_RESPONSE_KEY, EXTENSION_RESPONSE_VALUE))
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     // When the verifier returns PASS with LITE=true, regardless of the default policy and the
@@ -108,7 +108,7 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
                 .setVerifierMode(MODE_LITE)
                 .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     // When the verifier returns BYPASS, regardless of the default policy and the target sdk version
@@ -119,45 +119,45 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
                 .setVerifierMode(MODE_BYPASS)
                 .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     @Test
     public void testInstallWhenVerifierCrash() throws Exception {
         TestParams testParams = getInstallWhenVerifierCrashTestParams();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     @Test
     public void testInstallWhenVerifierTimeout() throws Exception {
         TestParams testParams = getInstallWhenVerifierTimeoutTestParams();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
 
     @Test
     public void testInstallWithVerifierIncompleteUnknown() throws Exception {
         TestParams testParams = getInstallWhenVerifierIncompleteUnknownTestParams();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     @Test
     public void testInstallWithVerifierIncompleteNetworkUnavailable()
             throws Exception {
         TestParams testParams = getInstallWithVerifierIncompleteNetworkUnavailableTestParams();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     @Test
     public void testInstallWithVerifierReject() throws Exception {
         TestParams testParams = getInstallWithVerifierRejectTestParams();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     @Test
     public void testInstallWithVerifierRejectWithExtensionResponse() throws Exception {
         TestParams testParams = getInstallWithVerifierRejectWithExtensionResponseTestParams();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     // With policy overridden to OPEN, the installation should always pass, regardless of the
@@ -172,6 +172,6 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
                 .setVerifierMode(MODE_REJECT_WITH_POLICY_OVERRIDE)
                 .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 }

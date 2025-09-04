@@ -22,8 +22,8 @@ import static android.content.pm.cts_root.utils.Constants.ACTION_REPORT_QUERY_DE
 import static android.content.pm.cts_root.utils.Constants.DELEGATE_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Constants.EXTRA_DELEGATE_PACKAGE_NAME;
 import static android.content.pm.cts_root.utils.Constants.VERIFIER_PACKAGE_NAME;
+import static android.content.pm.cts_root.utils.Utils.getDefaultTimeoutMillis;
 import static android.content.pm.cts_root.utils.Utils.getDefaultVerificationPolicy;
-import static android.content.pm.cts_root.utils.Utils.isLowRamDevice;
 import static android.content.pm.cts_root.utils.Utils.setDefaultVerificationPolicy;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -57,9 +57,7 @@ public class DeveloperVerificationPolicyDelegateTest {
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
     private static final Context sContext =
             InstrumentationRegistry.getInstrumentation().getContext();
-    private static final long DEFAULT_TIMEOUT_MS = isLowRamDevice(sContext)
-            ? TimeUnit.SECONDS.toMillis(60)
-            : TimeUnit.SECONDS.toMillis(15);
+    private static final long DEFAULT_TIMEOUT_MS = getDefaultTimeoutMillis(sContext);
 
     @BeforeClass
     public static void setUpBeforeClass() throws PackageManager.NameNotFoundException {
@@ -110,10 +108,10 @@ public class DeveloperVerificationPolicyDelegateTest {
         // Remember the old policy value
         final int oldPolicy = getDefaultVerificationPolicy(sContext);
         final int newPolicy = getNextPolicyForTest(oldPolicy);
-        setDefaultVerificationPolicy(sContext, newPolicy, userId, userId, DEFAULT_TIMEOUT_MS);
+        setDefaultVerificationPolicy(sContext, newPolicy, userId, userId);
         assertThat(getDefaultVerificationPolicy(sContext)).isEqualTo(newPolicy);
         // Restore the old policy value
-        setDefaultVerificationPolicy(sContext, oldPolicy, userId, userId, DEFAULT_TIMEOUT_MS);
+        setDefaultVerificationPolicy(sContext, oldPolicy, userId, userId);
         assertThat(getDefaultVerificationPolicy(sContext)).isEqualTo(oldPolicy);
     }
 
