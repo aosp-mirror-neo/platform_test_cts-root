@@ -22,17 +22,12 @@ import static android.content.pm.cts_root.utils.Utils.setDefaultVerificationPoli
 import static com.google.common.truth.Truth.assertThat;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.app.Instrumentation;
 import android.content.Context;
-import android.content.IIntentReceiver;
-import android.content.IIntentSender;
-import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.cts_root.utils.Constants;
-import android.os.Bundle;
-import android.os.IBinder;
 import android.os.UserHandle;
 
 import androidx.test.InstrumentationRegistry;
@@ -46,14 +41,13 @@ import org.junit.Test;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
 
 /**
- * The goal of this test is to make sure that the verifier works fine on a multi-user device.
+ * The goal of this test is to verify that the verifier works fine on a device with multiple users.
  * For this test we use the privileged version of the installer targeting 37. We need the privileged
  * version of the installer because it needs to send broadcasts across users.
  */
-public class DeveloperVerificationInstallerMultiUserTest extends DeveloperVerificationTestBase {
+public abstract class DeveloperVerificationMultiUserTestBase extends DeveloperVerificationTestBase {
     /**
      * For this test we only care about the most restrictive verification policy.
      */
@@ -75,10 +69,10 @@ public class DeveloperVerificationInstallerMultiUserTest extends DeveloperVerifi
             InstrumentationRegistry.getArguments().getString(
                     TEST_ARG_INSTALLER_PACKAGE_NAME, /* defaultValue= */ "invalid_package_name");
 
-    private static Context sContext;
-    private UiDevice mUiDevice;
-    private int mCurrentUser;
-    private int mOtherUser;
+    private Context mContextOfInitialUser;
+    UiDevice mUiDevice;
+    int mInitialUser;
+    int mOtherUser;
 
     @Override
     @Before
@@ -86,46 +80,51 @@ public class DeveloperVerificationInstallerMultiUserTest extends DeveloperVerifi
         super.setUp();
         // Prepare another user
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        sContext = instrumentation.getTargetContext();
+        mContextOfInitialUser = instrumentation.getTargetContext();
         mUiDevice = UiDevice.getInstance(instrumentation);
-        mCurrentUser = sContext.getUserId();
+        mInitialUser = ActivityManager.getCurrentUser();
         mOtherUser = createUser("Test User");
         assertThat(startUser(mOtherUser, true)).isTrue();
         // Make sure that the installer and the verifier are installed on the other user
-        installExistingPackageAsUser(sInstallerPackageName, mOtherUser);
-        installExistingPackageAsUser(Constants.VERIFIER_PACKAGE_NAME, mOtherUser);
         assertThat(isPackageInstalledForUser(sInstallerPackageName, mOtherUser)).isTrue();
         assertThat(isPackageInstalledForUser(Constants.VERIFIER_PACKAGE_NAME, mOtherUser))
                 .isTrue();
-        // Change the default verification policy for the other user
-        setDefaultVerificationPolicy(
-                sContext, sDefaultPolicy, mCurrentUser, mOtherUser, DEFAULT_TIMEOUT_MS);
+        assertThat(isPackageInstalledForUser(Constants.DELEGATE_PACKAGE_NAME, mOtherUser))
+                .isTrue();
     }
 
-    @Override
     @After
     public void tearDown() throws Exception {
-        super.tearDown();
         stopUser(mOtherUser, true, true);
         removeUser(mOtherUser);
     }
 
     @Test
     public void testInstallWithVerifierPassOnOtherUser() throws Exception {
+        // Change the default verification policy for the other user
+        int currentUser = ActivityManager.getCurrentUser();
+        Context currentContext = mContextOfInitialUser.createContextAsUser(
+                UserHandle.of(currentUser), 0);
+        setDefaultVerificationPolicy(currentContext, sDefaultPolicy, currentUser, mOtherUser);
         TestParams testParams = getTestParamsBuilder(mOtherUser)
                 .setVerifierMode(MODE_PASS)
                 .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(currentContext, testParams);
         // Assert that the test app is only installed on the other user
         assertThat(isPackageInstalledForUser(Constants.EMPTY_TEST_PACKAGE_NAME, mOtherUser))
                 .isTrue();
-        assertThat(isPackageInstalledForUser(Constants.EMPTY_TEST_PACKAGE_NAME, mCurrentUser))
+        assertThat(isPackageInstalledForUser(Constants.EMPTY_TEST_PACKAGE_NAME, mInitialUser))
                 .isFalse();
     }
 
     @Test
     public void testInstallWithVerifierRejectOnOtherUser() throws Exception {
+        // Change the default verification policy for the other user
+        int currentUser = ActivityManager.getCurrentUser();
+        Context currentContext = mContextOfInitialUser.createContextAsUser(
+                UserHandle.of(currentUser), 0);
+        setDefaultVerificationPolicy(currentContext, sDefaultPolicy, currentUser, mOtherUser);
         TestParams testParams = getTestParamsBuilder(mOtherUser)
                 .setVerifierMode(MODE_REJECT)
                 .setVerifierRejectMessage(REJECT_MESSAGE)
@@ -137,11 +136,11 @@ public class DeveloperVerificationInstallerMultiUserTest extends DeveloperVerifi
                         + REJECT_MESSAGE)
                 .setHasUserActionIntentExpected(true)
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(currentContext, testParams);
         // Assert that the test app is not installed on the other user
         assertThat(isPackageInstalledForUser(Constants.EMPTY_TEST_PACKAGE_NAME, mOtherUser))
                 .isFalse();
-        assertThat(isPackageInstalledForUser(Constants.EMPTY_TEST_PACKAGE_NAME, mCurrentUser))
+        assertThat(isPackageInstalledForUser(Constants.EMPTY_TEST_PACKAGE_NAME, mInitialUser))
                 .isFalse();
     }
 
@@ -152,16 +151,7 @@ public class DeveloperVerificationInstallerMultiUserTest extends DeveloperVerifi
                 .setIsInstallConfirmationExpected(!sTestArgIsInstallerPrivileged);
     }
 
-    private int createUser(String name) throws Exception {
-        // Must use a profile so that the installer activity can be launched
-        final String output = mUiDevice.executeShellCommand(
-                "pm create-user --profileOf 0 --user-type android.os.usertype.profile.MANAGED "
-                        + name);
-        if (output.startsWith("Success")) {
-            return Integer.parseInt(output.substring(output.lastIndexOf(" ")).trim());
-        }
-        throw new IllegalStateException(String.format("Failed to create user: %s", output));
-    }
+    abstract int createUser(String name) throws Exception;
 
     private boolean startUser(int userId, boolean waitFlag) throws Exception {
         String cmd = "am start-user " + (waitFlag ? "-w " : "") + userId;
@@ -190,26 +180,6 @@ public class DeveloperVerificationInstallerMultiUserTest extends DeveloperVerifi
         mUiDevice.executeShellCommand(cmd.toString());
     }
 
-    private void installExistingPackageAsUser(String packageName, int userId) throws Exception {
-        PackageInstaller pi = sContext.getPackageManager().getPackageInstaller();
-        final CompletableFuture<Integer> status = new CompletableFuture<>();
-        SystemUtil.runWithShellPermissionIdentity(() -> {
-            pi.installExistingPackage(packageName, userId,
-                    new IntentSender((IIntentSender) new IIntentSender.Stub() {
-                        @Override
-                        public void send(int code, Intent intent, String resolvedType,
-                                IBinder whitelistToken,
-                                IIntentReceiver finishedReceiver,
-                                String requiredPermission, Bundle options) {
-                            status.complete(intent.getIntExtra(
-                                    PackageInstaller.EXTRA_STATUS, Integer.MIN_VALUE));
-                        }
-                    })); },
-                Manifest.permission.INSTALL_PACKAGES, Manifest.permission.INTERACT_ACROSS_USERS,
-                Manifest.permission.INTERACT_ACROSS_USERS_FULL);
-        assertThat(status.get()).isEqualTo(PackageInstaller.STATUS_SUCCESS);
-    }
-
     private void removeUser(final int userId) throws Exception {
         mUiDevice.executeShellCommand(String.format("pm remove-user %s", userId));
     }
@@ -217,7 +187,7 @@ public class DeveloperVerificationInstallerMultiUserTest extends DeveloperVerifi
     private boolean isPackageInstalledForUser(String packageName, int userId) {
         return SystemUtil.runWithShellPermissionIdentity(() -> {
             try {
-                sContext.createContextAsUser(UserHandle.of(userId), /* flags= */ 0)
+                mContextOfInitialUser.createContextAsUser(UserHandle.of(userId), /* flags= */ 0)
                         .getPackageManager().getPackageInfo(packageName, /* flags= */ 0);
                 return true;
             } catch (PackageManager.NameNotFoundException e) {

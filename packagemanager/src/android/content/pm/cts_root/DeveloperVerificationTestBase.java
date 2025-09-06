@@ -18,37 +18,20 @@ package android.content.pm.cts_root;
 import static android.content.Intent.ACTION_INSTALL_PACKAGE;
 import static android.content.pm.Flags.FLAG_VERIFICATION_SERVICE;
 import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
-import static android.content.pm.cts_root.utils.Constants.ACTION_INSTALLER_RESULT;
-import static android.content.pm.cts_root.utils.Constants.ACTION_MODE_SET;
-import static android.content.pm.cts_root.utils.Constants.ACTION_SET_TEST_MODE;
-import static android.content.pm.cts_root.utils.Constants.EMPTY_TEST_PACKAGE_NAME;
-import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPONSE_KEY;
-import static android.content.pm.cts_root.utils.Constants.EXTRA_EXTENSION_RESPONSE_VALUE;
-import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_APK_PATH;
-import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_PACKAGE_NAME;
-import static android.content.pm.cts_root.utils.Constants.EXTRA_INSTALL_RESULT_INTENT;
-import static android.content.pm.cts_root.utils.Constants.EXTRA_IS_SPLIT_INSTALL;
-import static android.content.pm.cts_root.utils.Constants.EXTRA_REJECT_MESSAGE;
-import static android.content.pm.cts_root.utils.Constants.EXTRA_SESSION_VERIFICATION_POLICY_OVERRIDE;
-import static android.content.pm.cts_root.utils.Constants.EXTRA_TEST_MODE;
-import static android.content.pm.cts_root.utils.Constants.EXTRA_TEST_USER;
-import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
 import static android.content.pm.cts_root.utils.Constants.EMPTY_TEST_APK;
+import static android.content.pm.cts_root.utils.Constants.EMPTY_TEST_PACKAGE_NAME;
+import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
 import static android.content.pm.cts_root.utils.Constants.VERIFIER_PACKAGE_NAME;
-import static android.content.pm.cts_root.utils.Utils.isLowRamDevice;
+import static android.content.pm.cts_root.utils.Utils.configureAndLaunchInstaller;
+import static android.content.pm.cts_root.utils.Utils.configureVerifier;
 import static android.content.pm.cts_root.utils.Utils.setDefaultVerificationPolicy;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
-import android.Manifest;
-import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.app.ActivityManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
@@ -56,7 +39,6 @@ import android.content.pm.cts_root.utils.Constants;
 import android.content.pm.cts_root.utils.Utils;
 import android.net.Uri;
 import android.os.PersistableBundle;
-import android.os.UserHandle;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -66,9 +48,7 @@ import android.util.Pair;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.compatibility.common.util.DeviceConfigStateManager;
-import com.android.compatibility.common.util.SystemUtil;
 
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -80,8 +60,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 @RunWith(Parameterized.class)
 @RequiresFlagsEnabled(FLAG_VERIFICATION_SERVICE)
@@ -116,21 +94,9 @@ public abstract class DeveloperVerificationTestBase {
 
     protected static final Context sContext =
             InstrumentationRegistry.getInstrumentation().getContext();
-    // Default timeout to wait for results in this test
-    static final long DEFAULT_TIMEOUT_MS = isLowRamDevice(sContext)
-            ? TimeUnit.SECONDS.toMillis(60) : TimeUnit.SECONDS.toMillis(15);
-
-    private static final PackageInstaller sPackageInstaller =
-            sContext.getPackageManager().getPackageInstaller();
-    private static final int sUserId = ActivityManager.getCurrentUser();
-
-    private final MyBroadcastReceiver mBroadcastReceiver = new MyBroadcastReceiver();
     private static @PackageInstaller.DeveloperVerificationPolicy int sPreviousDefaultPolicy;
     private static String sPreviousRequestTimeoutMillis;
     private static String sPreviousConnectionTimeoutMillis;
-    private CompletableFuture<Intent> mInstallerResult;
-    private CompletableFuture<Integer> mVerifierModeSet;
-    private CompletableFuture<Boolean> mInstallConfirmationReceived;
 
     @BeforeClass
     public static void setUpBeforeClass() {
@@ -169,24 +135,9 @@ public abstract class DeveloperVerificationTestBase {
     @Before
     public void setUp() throws Exception {
         // Change the default verification policy
+        final int currentUserId = ActivityManager.getCurrentUser();
         setDefaultVerificationPolicy(
-                sContext, sDefaultPolicy, sUserId, sUserId, DEFAULT_TIMEOUT_MS);
-        mInstallerResult = new CompletableFuture<>();
-        mVerifierModeSet = new CompletableFuture<>();
-        mInstallConfirmationReceived = new CompletableFuture<>();
-        final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ACTION_INSTALLER_RESULT);
-        intentFilter.addAction(ACTION_MODE_SET);
-        sContext.registerReceiver(mBroadcastReceiver, intentFilter, Context.RECEIVER_EXPORTED);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        try {
-            sContext.unregisterReceiver(mBroadcastReceiver);
-        } catch (IllegalArgumentException e) {
-            // Broadcast receiver was not registered. Ignore.
-        }
+                sContext, sDefaultPolicy, currentUserId, currentUserId);
     }
 
     @AfterClass
@@ -195,130 +146,30 @@ public abstract class DeveloperVerificationTestBase {
                 PROPERTY_VERIFICATION_REQUEST_TIMEOUT_MILLIS, sPreviousRequestTimeoutMillis);
         setTimeoutValueInDeviceConfig(
                 PROPERTY_VERIFIER_CONNECTION_TIMEOUT_MILLIS, sPreviousConnectionTimeoutMillis);
+        final int currentUserId = ActivityManager.getCurrentUser();
         setDefaultVerificationPolicy(
-                sContext, sPreviousDefaultPolicy, sUserId, sUserId, DEFAULT_TIMEOUT_MS);
+                sContext, sPreviousDefaultPolicy, currentUserId, currentUserId);
     }
 
-    private void configureAndLaunchInstaller(String installerPackageName,
-            @Nullable String extensionResponseKey, @NonNull String apkPath,
-            @NonNull String packageName, boolean isSplitInstall, int userId) {
-        // Start the installer app to install a test app at the given path and listen for results
-        SystemUtil.runWithShellPermissionIdentity(() -> {
-            sContext.startActivityAsUser(
-                    createLaunchInstallerIntent(installerPackageName, extensionResponseKey, apkPath,
-                            packageName, isSplitInstall), UserHandle.of(userId));
-        }, Manifest.permission.INTERACT_ACROSS_USERS_FULL);
-    }
-
-    private static Intent createLaunchInstallerIntent(String installerPackageName,
-            @Nullable String extensionResponseKey, @NonNull String apkPath,
-            @NonNull String packageName, boolean isSplitInstall) {
-        Intent intent = new Intent("cts_root.action.LAUNCH_INSTALLER");
-        intent.setPackage(installerPackageName);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        if (extensionResponseKey != null) {
-            intent.putExtra(EXTRA_EXTENSION_RESPONSE_KEY, extensionResponseKey);
-        }
-        intent.putExtra(EXTRA_INSTALL_APK_PATH, apkPath);
-        intent.putExtra(EXTRA_INSTALL_PACKAGE_NAME, packageName);
-        intent.putExtra(EXTRA_IS_SPLIT_INSTALL, isSplitInstall);
-        // Attach the user id of the test itself so that the installer can send back the broadcast
-        intent.putExtra(EXTRA_TEST_USER, UserHandle.of(sUserId));
-        return intent;
-    }
-
-    private class MyBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            switch (action) {
-                case ACTION_INSTALLER_RESULT:
-                    final Intent resultIntent = intent.getParcelableExtra(
-                            EXTRA_INSTALL_RESULT_INTENT, Intent.class);
-                    if (resultIntent == null) {
-                        break;
-                    }
-                    final Intent extraIntent = resultIntent.getParcelableExtra(
-                            Intent.EXTRA_INTENT, Intent.class);
-                    final int sessionId = resultIntent.getIntExtra(
-                            PackageInstaller.EXTRA_SESSION_ID,
-                            PackageInstaller.SessionInfo.INVALID_ID);
-                    // For a non-privileged installer, a user confirmation dialog would first
-                    // appear. We are not interested in that dialog, so just bypass it directly by
-                    // reporting to the system that the user has confirmed the installation, so that
-                    // the installation can proceed to the verification stage.
-                    if (extraIntent != null
-                            && PackageInstaller.ACTION_CONFIRM_INSTALL.equals(
-                                    extraIntent.getAction())
-                            && sessionId != PackageInstaller.SessionInfo.INVALID_ID) {
-                        SystemUtil.runWithShellPermissionIdentity(
-                                () -> sPackageInstaller.setPermissionsResult(
-                                        sessionId, /* accepted= */ true),
-                                Manifest.permission.INSTALL_PACKAGES);
-                        mInstallConfirmationReceived.complete(true);
-                    } else {
-                        // Otherwise, directly go to check the content of the result intent.
-                        mInstallerResult.complete(resultIntent);
-                    }
-                    break;
-                case ACTION_MODE_SET:
-                    mVerifierModeSet.complete(intent.getIntExtra(EXTRA_TEST_MODE,
-                            /* defaultValue= */ MODE_PASS));
-                    break;
-                case null:
-                default:
-                    break;
-            }
-        }
-    }
-
-    private void configureVerifier(@Constants.Mode int mode, @Nullable String rejectMessage,
-            @Nullable String extensionResponseValue, int sessionPolicyOverride, int userId)
+    protected void installAndVerifyResults(Context context, TestParams testParams)
             throws Exception {
-        Intent intent = new Intent(ACTION_SET_TEST_MODE);
-        intent.setPackage(VERIFIER_PACKAGE_NAME);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(EXTRA_TEST_MODE, mode);
-        if (rejectMessage != null) {
-            intent.putExtra(EXTRA_REJECT_MESSAGE, rejectMessage);
-        }
-        if (extensionResponseValue != null) {
-            intent.putExtra(EXTRA_EXTENSION_RESPONSE_VALUE, extensionResponseValue);
-        }
-        intent.putExtra(EXTRA_SESSION_VERIFICATION_POLICY_OVERRIDE, sessionPolicyOverride);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        // Attach the user id of the test itself so that the verifier can send back the broadcast
-        intent.putExtra(EXTRA_TEST_USER, UserHandle.of(sUserId));
-        SystemUtil.runWithShellPermissionIdentity(() -> {
-            sContext.startActivityAsUser(intent, UserHandle.of(userId));
-        }, Manifest.permission.INTERACT_ACROSS_USERS_FULL);
-        // Wait to confirm that the mode is set by the verifier app
-        assertThat(mVerifierModeSet.get(DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS)).isEqualTo(mode);
-    }
-
-    protected void installAndVerifyResults(TestParams testParams) throws Exception {
         final Pair<String, String> extensionResponseKeyValuePairExpected =
                 testParams.getExtensionResponseKeyValuePairExpected();
         final String extensionResponseKeyExpected = extensionResponseKeyValuePairExpected.first;
         final String extensionResponseValueExpected = extensionResponseKeyValuePairExpected.second;
         // Then change the verifier mode and set its extension response values
-        configureVerifier(testParams.getVerifierMode(), testParams.getVerifierRejectMessage(),
+        configureVerifier(context, testParams.getVerifierMode(),
+                testParams.getVerifierRejectMessage(),
                 extensionResponseValueExpected, testParams.getSessionPolicyOverride(),
                 testParams.getUserId());
-        // Launch the installer to install a package via the Session APIs
-        configureAndLaunchInstaller(testParams.getInstallerPackageName(),
+        // Launch the installer to install a package via the Session APIs and wait for th result
+        final Intent installerResultReceived = configureAndLaunchInstaller(context,
+                testParams.getInstallerPackageName(),
                 extensionResponseKeyExpected, testParams.getApkPath(), testParams.getPackageName(),
-                testParams.isSplitInstall(), testParams.getUserId());
-        if (testParams.isInstallConfirmationExpected()) {
-            // For a non-privileged installer, verify that the first user action requested was for
-            // the install confirmation.
-            assertThat(mInstallConfirmationReceived.get(
-                    DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS)).isTrue();
-        }
+                testParams.isSplitInstall(), testParams.isInstallConfirmationExpected(),
+                testParams.getUserId());
+
         // Parse the installation result
-        final Intent installerResultReceived = mInstallerResult.get(DEFAULT_TIMEOUT_MS,
-                TimeUnit.MILLISECONDS);
         final int statusCodeReceived = installerResultReceived.getIntExtra(
                 PackageInstaller.EXTRA_STATUS, Integer.MIN_VALUE);
         final int sessionIdReceived = installerResultReceived.getIntExtra(
@@ -505,7 +356,7 @@ public abstract class DeveloperVerificationTestBase {
             private String mApkPath = EMPTY_TEST_APK;
             private String mPackageName = EMPTY_TEST_PACKAGE_NAME;
             private boolean mIsSplitInstall = false;
-            private int mUserId = sUserId;
+            private int mUserId = ActivityManager.getCurrentUser();
 
             public TestParamsBuilder setInstallerPackageName(String installerPackageName) {
                 this.mInstallerPackageName = installerPackageName;
