@@ -24,6 +24,7 @@ import static com.android.compatibility.common.util.SystemUtil.runShellCommand;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
@@ -34,6 +35,7 @@ import android.os.BugreportManager;
 import android.os.BugreportManager.BugreportCallback;
 import android.os.BugreportParams;
 import android.os.ParcelFileDescriptor;
+import android.os.UserManager;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -77,6 +79,7 @@ public class BugreportManagerTest {
 
     private Context mContext;
     private BugreportManager mBugreportManager;
+    private UserManager mUserManager;
     private Method mGetServiceMethod;
 
     @Rule
@@ -97,6 +100,7 @@ public class BugreportManagerTest {
     public void setup() throws Exception {
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mBugreportManager = mContext.getSystemService(BugreportManager.class);
+        mUserManager = mContext.getSystemService(UserManager.class);
         mGetServiceMethod = Class.forName("android.os.ServiceManager").getMethod(
             "getService", String.class);
         ensureNoConsentDialogShown();
@@ -230,6 +234,8 @@ public class BugreportManagerTest {
     @Test
     @RequiresFlagsEnabled(FLAG_ONBOARDING_BUGREPORT_STORAGE_BUG_FIX)
     public void testBugreportsLimitReached() throws Exception {
+        assumeFalse("Test only allowed in non-headless system user mode",
+                mUserManager.isHeadlessSystemUserMode());
         try {
             List<File> bugreportFiles = new ArrayList<>();
             List<String> bugreportFileLocations = new ArrayList<>();
