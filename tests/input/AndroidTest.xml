@@ -49,6 +49,17 @@
         <!-- dismiss all system dialogs before launch test -->
         <option name="run-command" value="am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS" />
     </target_preparer>
+    <target_preparer class="com.android.tradefed.targetprep.PushFilePreparer">
+        <!-- Push device configuration files for testing, to be matched with a test device name -->
+        <option name="cleanup" value="true" />
+        <option name="push-file" key="TestTouchpadWithEmptyConfiguration.idc" value="/data/system/devices/idc/TestTouchpadWithEmptyConfiguration.idc" />
+        <option name="push-file" key="TestTouchpadWithEmptyPrimaryDirectionalMotionAxis.idc" value="/data/system/devices/idc/TestTouchpadWithEmptyPrimaryDirectionalMotionAxis.idc" />
+        <option name="push-file" key="TestTouchpadWithInvalidPrimaryDirectionalMotionAxis.idc" value="/data/system/devices/idc/TestTouchpadWithInvalidPrimaryDirectionalMotionAxis.idc" />
+        <option name="push-file" key="TestTouchpadWithMultiplePrimaryDirectionalMotionAxis.idc" value="/data/system/devices/idc/TestTouchpadWithMultiplePrimaryDirectionalMotionAxis.idc" />
+        <option name="push-file" key="TestTouchpadWithPrimaryDirectionalMotionAxisX.idc" value="/data/system/devices/idc/TestTouchpadWithPrimaryDirectionalMotionAxisX.idc" />
+        <option name="push-file" key="TestTouchpadWithPrimaryDirectionalMotionAxisY.idc" value="/data/system/devices/idc/TestTouchpadWithPrimaryDirectionalMotionAxisY.idc" />
+        <option name="push-file" key="TestTouchpadWithPrimaryDirectionalMotionAxisZ.idc" value="/data/system/devices/idc/TestTouchpadWithPrimaryDirectionalMotionAxisZ.idc" />
+    </target_preparer>
     <metrics_collector class="com.android.tradefed.device.metric.FilePullerLogCollector">
         <option name="pull-pattern-keys" value="input_.*" />
         <!-- Pull perfetto traces from DefaultUITraceListener -->
