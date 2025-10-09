@@ -135,7 +135,6 @@ public class PackageWatchdogTest {
      * observed.
      */
     @Test
-    @Ignore("b/354112511")
     public void testUnregistration() throws Exception {
         mTestObserver1 = new TestObserver(OBSERVER_NAME_1);
         mTestObserver2 = new TestObserver(OBSERVER_NAME_2, mLatch2);
@@ -239,7 +238,6 @@ public class PackageWatchdogTest {
      * a given package.
      */
     @Test
-    @Ignore("b/354112511")
     public void testPersistentObserverDoesNotWatchPackage() {
         mTestObserver1 = new TestObserver(OBSERVER_NAME_1);
         mTestObserver1.setPersistent(true);

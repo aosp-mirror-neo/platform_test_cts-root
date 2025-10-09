@@ -34,6 +34,7 @@
         <option name="package" value="android.packagewatchdog.cts_root"/>
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner" />
         <option name="restart" value="false" />
+        <option name="use-test-storage" value="false"/>
     </test>
 
     <!-- Only run Cts Tests in MTS if the Crashrecovery Mainline module is installed. -->
