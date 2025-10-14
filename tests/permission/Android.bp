@@ -22,6 +22,8 @@ android_test {
     defaults: ["cts_defaults"],
     data: [
         ":CtsRootPermissionSignaturePermissionAllowlistNormalApp",
+        ":CtsRootPermissionBpfMapApp1",
+        ":CtsRootPermissionBpfMapApp2",
     ],
     libs: [
         "android.test.runner.stubs.system",
@@ -34,6 +36,7 @@ android_test {
     platform_apis: true,
     srcs: [
         "src/**/*.java",
+        "src/**/*.kt",
     ],
     static_libs: [
         "androidx.test.core",
