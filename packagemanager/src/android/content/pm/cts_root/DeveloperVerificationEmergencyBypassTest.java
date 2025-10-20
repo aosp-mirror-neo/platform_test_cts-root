@@ -35,12 +35,12 @@ import java.util.Arrays;
 public class DeveloperVerificationEmergencyBypassTest extends DeveloperVerificationTestBase {
     private static final String VERIFIER_APK_PATH = APK_PATH_BASE + "CtsRootVerifierApp.apk";
     private static final String PRIV_INSTALLER_APK_PATH =
-            APK_PATH_BASE + "CtsRootPrivInstallerAppTarget36.apk";
+            APK_PATH_BASE + "CtsRootPrivInstallerAppTarget37.apk";
     private static final String EMERGENCY_INSTALLER_APK_PATH =
             APK_PATH_BASE + "CtsRootEmergencyInstallerApp.apk";
 
     private static final String PRIV_INSTALLER_SPLIT_APK =
-            APK_PATH_BASE + "CtsRootPrivInstallerAppTarget36_mdpi-v4.apk";
+            APK_PATH_BASE + "CtsRootPrivInstallerAppTarget37_mdpi-v4.apk";
 
 
     /**
@@ -80,7 +80,7 @@ public class DeveloperVerificationEmergencyBypassTest extends DeveloperVerificat
                 .setApkPath(VERIFIER_APK_PATH)
                 .setPackageName(VERIFIER_PACKAGE_NAME)
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     @Test
@@ -98,7 +98,7 @@ public class DeveloperVerificationEmergencyBypassTest extends DeveloperVerificat
                 .setSplitInstall(true)
                 .setPackageName(PRIV_INSTALLER_PACKAGE_NAME)
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class DeveloperVerificationEmergencyBypassTest extends DeveloperVerificat
                 .setApkPath(PRIV_INSTALLER_APK_PATH)
                 .setPackageName(PRIV_INSTALLER_PACKAGE_NAME)
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 
     @Test
@@ -128,6 +128,6 @@ public class DeveloperVerificationEmergencyBypassTest extends DeveloperVerificat
                 .setApkPath(EMERGENCY_INSTALLER_APK_PATH)
                 .setPackageName(EMERGENCY_INSTALLER_PACKAGE_NAME)
                 .build();
-        installAndVerifyResults(testParams);
+        installAndVerifyResults(sContext, testParams);
     }
 }

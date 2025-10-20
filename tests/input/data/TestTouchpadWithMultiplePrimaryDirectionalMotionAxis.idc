@@ -1,0 +1,2 @@
+device.viewBehavior_primaryDirectionalMotionAxis = X
+device.viewBehavior_primaryDirectionalMotionAxis = Y

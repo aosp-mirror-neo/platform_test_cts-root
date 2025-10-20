@@ -62,21 +62,6 @@ public class DeveloperVerificationVerifierTest {
     }
 
     @Test
-    public void testUpdatedVerifierCannotBeUninstalled() throws Exception {
-        final ApplicationInfo verifierInfo = sContext.getPackageManager().getPackageInfo(
-                VERIFIER_PACKAGE_NAME, /* flags= */ 0).applicationInfo;
-        // Check that the status of the installer is privileged
-        assertThat(verifierInfo).isNotNull();
-        assertThat(verifierInfo.isPrivilegedApp()).isEqualTo(true);
-        assertThat(verifierInfo.isSystemApp()).isEqualTo(true);
-        // Check that the installer has been updated
-        assertThat(verifierInfo.publicSourceDir).startsWith("/data/app");
-        String result =
-                SystemUtil.runShellCommandOrThrow("pm uninstall " + VERIFIER_PACKAGE_NAME).trim();
-        assertThat(result).isEqualTo("Failure [DELETE_FAILED_INTERNAL_ERROR]");
-    }
-
-    @Test
     public void testUpdatedVerifierSupportRollback() throws Exception {
         PackageInfo verifierInfo = sContext.getPackageManager().getPackageInfo(
                 VERIFIER_PACKAGE_NAME, /* flags= */ 0);

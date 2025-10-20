@@ -18,7 +18,6 @@ package android.content.pm.cts_root;
 import static android.content.pm.cts_root.utils.Constants.MODE_CRASH;
 import static android.content.pm.cts_root.utils.Constants.MODE_INCOMPLETE_NETWORK_UNAVAILABLE;
 import static android.content.pm.cts_root.utils.Constants.MODE_INCOMPLETE_UNKNOWN;
-import static android.content.pm.cts_root.utils.Constants.MODE_LITE;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT_WITH_EXTENSION_RESPONSE;
 import static android.content.pm.cts_root.utils.Constants.MODE_TIMEOUT;
@@ -32,10 +31,8 @@ import android.os.Build;
 import android.util.Pair;
 
 /**
- * Both privileged and non-privileged installer targeting SDK 36+ behave the same with regard to
- * verification results, therefore they share the same test class. Notice that it is not the case
- * for installers targeting SDK 35 and below, because they behave differently according to their
- * privileged or non-privileged status.
+ * Non privileged installer targeting 36 and below will request user confirmation most of the time
+ * including blocking failures.
  */
 public class DeveloperVerificationInstallerTarget36Test
         extends DeveloperVerificationInstallerTestBase {
@@ -46,8 +43,7 @@ public class DeveloperVerificationInstallerTarget36Test
                     sInstallerPackageName, /* flags= */ 0).applicationInfo;
             // Check that the target sdk of the installer matches with the expectation
             assertThat(installerInfo).isNotNull();
-            assertThat(installerInfo.targetSdkVersion).isGreaterThan(
-                    Build.VERSION_CODES.VANILLA_ICE_CREAM);
+            assertThat(installerInfo.targetSdkVersion).isEqualTo(Build.VERSION_CODES.BAKLAVA);
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -112,9 +108,9 @@ public class DeveloperVerificationInstallerTarget36Test
     }
 
     @Override
-    protected TestParams getInstallWithVerifierLiteTestParams() {
+    protected TestParams getInstallWithVerifierRejectTestParams() {
         TestParams.TestParamsBuilder testParamsBuilder = getTestParamsBuilder()
-                .setVerifierMode(MODE_LITE);
+                .setVerifierMode(MODE_REJECT);
         if (sDefaultPolicy == PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE) {
             testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS);
         } else {
@@ -126,41 +122,16 @@ public class DeveloperVerificationInstallerTarget36Test
     }
 
     @Override
-    protected TestParams getInstallWithVerifierRejectTestParams() {
-        TestParams.TestParamsBuilder testParamsBuilder = getTestParamsBuilder()
-                .setVerifierMode(MODE_REJECT);
-        if (sDefaultPolicy == PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE) {
-            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS);
-        } else {
-            testParamsBuilder
-                    .setVerifierRejectMessage(REJECT_MESSAGE)
-                    .setStatusCodeExpected(PackageInstaller.STATUS_FAILURE_ABORTED)
-                    .setVerificationFailureReasonExpected(
-                            PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED)
-                    .setErrorMessageExpected("INSTALL_FAILED_VERIFICATION_FAILURE:"
-                            + " Verifier rejected the installation with message: "
-                            + REJECT_MESSAGE)
-                    .setHasUserActionIntentExpected(true);
-        }
-        return testParamsBuilder.build();
-    }
-
-    @Override
     protected TestParams getInstallWithVerifierRejectWithExtensionResponseTestParams() {
         TestParams.TestParamsBuilder testParamsBuilder = getTestParamsBuilder()
                 .setVerifierMode(MODE_REJECT_WITH_EXTENSION_RESPONSE);
         if (sDefaultPolicy == PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE) {
-            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS);
-        } else {
-            testParamsBuilder.setVerifierRejectMessage(REJECT_MESSAGE)
+            testParamsBuilder.setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
                     .setExtensionResponseKeyValuePairExpected(
-                            new Pair<>(EXTENSION_RESPONSE_KEY, EXTENSION_RESPONSE_VALUE))
-                    .setStatusCodeExpected(PackageInstaller.STATUS_FAILURE_ABORTED)
-                    .setVerificationFailureReasonExpected(
-                            PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED)
-                    .setErrorMessageExpected("INSTALL_FAILED_VERIFICATION_FAILURE:"
-                            + " Verifier rejected the installation with message: "
-                            + REJECT_MESSAGE)
+                            new Pair<>(EXTENSION_RESPONSE_KEY, EXTENSION_RESPONSE_VALUE));
+        } else {
+            testParamsBuilder
+                    .setStatusCodeExpected(PackageInstaller.STATUS_PENDING_USER_ACTION)
                     .setHasUserActionIntentExpected(true);
         }
         return testParamsBuilder.build();

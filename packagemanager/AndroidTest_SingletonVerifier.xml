@@ -24,29 +24,30 @@
 
     <target_preparer class="com.android.tradefed.targetprep.PushFilePreparer">
         <option name="push-file" key="CtsRootVerifierProviderOverlay.apk" value="/product/overlay/CtsRootVerifierProviderOverlay.apk" />
-        <option name="push-file" key="CtsRootVerifierApp.apk" value="/system/priv-app/CtsRootVerifierApp/CtsRootVerifierApp.apk" />
+        <option name="push-file" key="CtsRootSingletonVerifierApp.apk" value="/system/priv-app/CtsRootSingletonVerifierApp/CtsRootSingletonVerifierApp.apk" />
         <option name="push-file" key="CtsRootDelegateApp.apk" value="/system/priv-app/CtsRootDelegateApp/CtsRootDelegateApp.apk" />
         <option name="push-file" key="developer-verification-cts-root-permission.xml" value="/system/etc/permissions/developer-verification-cts-root-permission.xml" />
         <option name="push-file" key="CtsRootEmptyTestApp.apk" value="/data/local/tmp/cts-root/CtsRootEmptyTestApp.apk" />
+        <!-- Install privileged installer app in the system partition. -->
+        <option name="push-file" key="CtsRootPrivInstallerAppTarget37.apk" value="/system/priv-app/CtsRootPrivInstallerAppTarget37/CtsRootPrivInstallerAppTarget37.apk" />
         <option name="cleanup" value="true" />
         <option name="remount-system" value="true" />
     </target_preparer>
 
-    <!-- Reboot the system so that the test will install the privileged verifier app and read the newly pushed allowlist. -->
+    <!-- Reboot the system so that the test will install the privileged installer app and read the newly pushed allowlist. -->
     <target_preparer class="com.android.tradefed.targetprep.RebootTargetPreparer" />
 
     <target_preparer class="com.android.tradefed.targetprep.suite.SuiteApkInstaller">
         <option name="cleanup-apks" value="true" />
         <option name="test-file-name" value="{MODULE}.apk" />
-        <!-- Install non-privileged installer app.-->
-        <option name="test-file-name" value="CtsRootInstallerAppTarget35.apk" />
     </target_preparer>
 
     <test class="com.android.tradefed.testtype.AndroidJUnitTest">
         <option name="package" value="android.content.pm.cts_root" />
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner" />
         <option name="restart" value="false" />
-        <option name="instrumentation-arg" key="is_installer_privileged" value="false"/>
-        <option name="instrumentation-arg" key="installer_package_name" value="android.content.pm.cts_root.installerapp"/>
+        <option name="instrumentation-arg" key="is_installer_privileged" value="true"/>
+        <option name="instrumentation-arg" key="installer_package_name" value="android.content.pm.cts_root.privinstallerapp"/>
     </test>
+
 </configuration>

@@ -19,6 +19,7 @@
         android:versionCode="1" >
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
     <uses-permission android:name="android.permission.DEVELOPER_VERIFICATION_AGENT" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS"/>
 
     <application android:label="Cts Root Verifier App">
         <activity android:name="android.content.pm.cts_root.verifierapp.CtsRootVerifierActivity"

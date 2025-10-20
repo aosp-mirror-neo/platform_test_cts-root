@@ -1,0 +1,1 @@
+device.viewBehavior_primaryDirectionalMotionAxis = SUPER_COOL_CUSTOM_AXIS
