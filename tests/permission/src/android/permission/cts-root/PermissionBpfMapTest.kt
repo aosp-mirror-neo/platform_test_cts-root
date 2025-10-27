@@ -18,12 +18,14 @@ package android.permission.cts_root
 
 import android.Manifest
 import android.app.AppOpsManager
+import android.os.Build
 import android.os.UserManager
 import android.permission.flags.Flags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.util.SparseIntArray
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.LocalManagerRegistry
@@ -40,6 +42,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@SdkSuppress(minSdkVersion = Build.VERSION_CODES.CINNAMON_BUN, codeName = "CinnamonBun")
 @RequiresFlagsEnabled(Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
 class PermissionBpfMapTest {
     @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()!!
