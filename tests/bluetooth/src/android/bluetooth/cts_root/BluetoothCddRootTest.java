@@ -26,8 +26,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothProfile;
-import android.bluetooth.cts.BTAdapterUtils;
 import android.bluetooth.cts.TestUtils;
+import android.bluetooth.test_utils.BlockingBluetoothAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
@@ -78,7 +78,7 @@ public class BluetoothCddRootTest {
                 BLUETOOTH_PRIVILEGED, BLUETOOTH_SCAN, DUMP, PACKAGE_USAGE_STATS);
         mAdapter = TestUtils.getBluetoothAdapterOrDie();
         if (mAdapter.isEnabled()) {
-            assertThat(BTAdapterUtils.disableAdapter(mAdapter, mContext)).isTrue();
+            assertThat(BlockingBluetoothAdapter.disable(true)).isTrue();
             try {
                 Thread.sleep(BLUETOOTH_TOGGLE_DELAY_MS);
             } catch (InterruptedException ignored) { }
@@ -92,7 +92,7 @@ public class BluetoothCddRootTest {
         }
         if (mAdapter != null && mAdapter.getState() != BluetoothAdapter.STATE_OFF) {
             if (mAdapter.getState() == BluetoothAdapter.STATE_ON) {
-                assertThat(BTAdapterUtils.disableAdapter(mAdapter, mContext)).isTrue();
+                assertThat(BlockingBluetoothAdapter.disable(true)).isTrue();
             }
             try {
                 Thread.sleep(BLUETOOTH_TOGGLE_DELAY_MS);
@@ -128,7 +128,7 @@ public class BluetoothCddRootTest {
                 TestUtils.isTv(mContext));
         AtomsProto.BluetoothLocalVersionsReported version = getBluetoothVersion();
         Assume.assumeTrue(version.hciVersion >= BLUETOOTH_CORE_SPECIFICATION_5_0);
-        assertThat(BTAdapterUtils.enableAdapter(mAdapter, mContext)).isTrue();
+        assertThat(BlockingBluetoothAdapter.enable()).isTrue();
         assertThat(mAdapter.getSupportedProfiles()).contains(BluetoothProfile.HEARING_AID);
         TestUtils.BluetoothCtsServiceConnector connector =
                 new TestUtils.BluetoothCtsServiceConnector(TAG,
@@ -171,7 +171,7 @@ public class BluetoothCddRootTest {
         Set<String> permissionsAdopted = TestUtils.getAdoptedShellPermissions();
         String[] permissionArray = permissionsAdopted.toArray(String[]::new);
         if (mAdapter.isEnabled()) {
-            assertThat(BTAdapterUtils.disableAdapter(mAdapter, mContext)).isTrue();
+            assertThat(BlockingBluetoothAdapter.disable(true)).isTrue();
             try {
                 Thread.sleep(BLUETOOTH_TOGGLE_DELAY_MS);
             } catch (InterruptedException ignored) { }
@@ -180,7 +180,7 @@ public class BluetoothCddRootTest {
         // Requires root to enable metrics
         assertThat(statsdHelper.addEventConfig(
                 List.of(BLUETOOTH_LOCAL_VERSION_REPORTED_ATOM_ID))).isTrue();
-        assertThat(BTAdapterUtils.enableAdapter(mAdapter, mContext)).isTrue();
+        assertThat(BlockingBluetoothAdapter.enable()).isTrue();
         List<StatsLog.EventMetricData> metrics = statsdHelper.getEventMetrics();
         AtomsProto.BluetoothLocalVersionsReported summaryAtom =
                 new AtomsProto.BluetoothLocalVersionsReported();
