@@ -18,12 +18,16 @@ package android.permission.cts_root
 
 import android.Manifest
 import android.app.AppOpsManager
+import android.os.Build
+import android.os.Process
+import android.os.UserHandle
 import android.os.UserManager
 import android.permission.flags.Flags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.util.SparseIntArray
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.LocalManagerRegistry
@@ -40,6 +44,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@SdkSuppress(minSdkVersion = Build.VERSION_CODES.CINNAMON_BUN, codeName = "CinnamonBun")
 @RequiresFlagsEnabled(Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
 class PermissionBpfMapTest {
     @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()!!
@@ -65,6 +70,9 @@ class PermissionBpfMapTest {
         var removedAppId = -1
 
         override fun setUidsPermissionBits(uidsPermissionBits: SparseIntArray) {
+            if (latch.count == 0L) {
+                return
+            }
             callbackInvocations.add(SET_UIDS_PERMISSIONS_CALLED)
             uidsPermissionBitsArray = uidsPermissionBits
             latch.countDown()
@@ -96,6 +104,9 @@ class PermissionBpfMapTest {
             .isTrue()
         return isNthBitSet(permissionBpfMap.uidsPermissionBitsArray.get(uid), bitIndex)
     }
+
+    private fun getAllGrantedPermissionsBits(permissionNames: List<String>) =
+        ((1L shl permissionNames.size) - 1).toInt()
 
     private fun awaitLatch(latch: CountDownLatch) =
         assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue()
@@ -188,16 +199,69 @@ class PermissionBpfMapTest {
             permissionManagerLocal.registerBpfMap(testPermissionBpfMap, SUPPORTED_BPF_PERMISSIONS)
             awaitLatch(testPermissionBpfMap.latch)
 
-            assertWithMessage("Initial callback should have at least 2 uids")
+            assertWithMessage("Initial callback should have at least 4 uids")
                 .that(testPermissionBpfMap.uidsPermissionBitsArray.size())
-                .isGreaterThan(1)
+                .isGreaterThan(3)
             assertThat(testPermissionBpfMap.uidsPermissionBitsArray.indexOfKey(testApp1Uid) >= 0)
                 .isTrue()
             assertThat(testPermissionBpfMap.uidsPermissionBitsArray.indexOfKey(testApp2Uid) >= 0)
                 .isTrue()
+
+            assertRootAndSystemUid(
+                context.userId,
+                testPermissionBpfMap.uidsPermissionBitsArray,
+                SUPPORTED_BPF_PERMISSIONS,
+            )
         } finally {
             permissionManagerLocal.unregisterBpfMap(testPermissionBpfMap)
         }
+    }
+
+    @Test
+    fun addingUser_triggers_setUidsPermissionBitsCallback_withRootAndSystemUid() {
+        val testPermissionBpfMap = TestPermissionBpfMap(mutableListOf(), CountDownLatch(1))
+
+        var userId = -1
+        try {
+            permissionManagerLocal.registerBpfMap(testPermissionBpfMap, SUPPORTED_BPF_PERMISSIONS)
+            awaitLatch(testPermissionBpfMap.latch)
+
+            testPermissionBpfMap.latch = CountDownLatch(1)
+
+            val userInfo = userManager.createUser("TestUser", UserManager.USER_TYPE_FULL_GUEST, 0)!!
+            userId = userInfo.userHandle.identifier
+
+            awaitLatch(testPermissionBpfMap.latch)
+
+            assertWithMessage("Callback should have at least 2 uids")
+                .that(testPermissionBpfMap.uidsPermissionBitsArray.size())
+                .isGreaterThan(1)
+
+            assertRootAndSystemUid(
+                userId,
+                testPermissionBpfMap.uidsPermissionBitsArray,
+                SUPPORTED_BPF_PERMISSIONS,
+            )
+        } finally {
+            permissionManagerLocal.unregisterBpfMap(testPermissionBpfMap)
+            userManager.removeUser(userId)
+        }
+    }
+
+    private fun assertRootAndSystemUid(
+        userId: Int,
+        uidsPermissionBitsArray: SparseIntArray,
+        permissionNames: List<String>,
+    ) {
+        val rootUid = UserHandle.getUid(userId, Process.ROOT_UID)
+        assertThat(uidsPermissionBitsArray.indexOfKey(rootUid) >= 0).isTrue()
+        assertThat(uidsPermissionBitsArray.get(rootUid))
+            .isEqualTo(getAllGrantedPermissionsBits(permissionNames))
+
+        val systemUid = UserHandle.getUid(userId, Process.SYSTEM_UID)
+        assertThat(uidsPermissionBitsArray.indexOfKey(systemUid) >= 0).isTrue()
+        assertThat(uidsPermissionBitsArray.get(systemUid))
+            .isEqualTo(getAllGrantedPermissionsBits(permissionNames))
     }
 
     @Test
