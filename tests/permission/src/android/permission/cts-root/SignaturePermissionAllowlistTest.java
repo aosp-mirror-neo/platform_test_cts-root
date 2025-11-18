@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.SigningDetails;
 import android.os.Build;
+import android.os.UserHandle;
 import android.permission.flags.Flags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -79,6 +80,8 @@ public final class SignaturePermissionAllowlistTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         assumeTrue(Build.isDebuggable());
+        // We cannot inject into system server in user 0 if we are running in a different user.
+        assumeTrue(UserHandle.myUserId() == UserHandle.USER_SYSTEM);
     }
 
     @Before
