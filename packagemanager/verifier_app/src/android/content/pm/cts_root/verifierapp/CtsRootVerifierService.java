@@ -23,6 +23,7 @@ import static android.content.pm.cts_root.utils.Constants.MODE_INCOMPLETE_NETWOR
 import static android.content.pm.cts_root.utils.Constants.MODE_INCOMPLETE_UNKNOWN;
 import static android.content.pm.cts_root.utils.Constants.MODE_LITE;
 import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
+import static android.content.pm.cts_root.utils.Constants.MODE_PASS_WITH_VERIFICATION_FLAGS_RESPONSE;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT_WITH_EXTENSION_RESPONSE;
 import static android.content.pm.cts_root.utils.Constants.MODE_TIMEOUT;
@@ -141,6 +142,15 @@ public class CtsRootVerifierService extends DeveloperVerifierService {
             case MODE_BYPASS:
                 session.reportVerificationBypassed(/* bypassReason= */ 10);
                 Log.i(TAG, "Reported verification bypassed.");
+                break;
+            case MODE_PASS_WITH_VERIFICATION_FLAGS_RESPONSE:
+                status = new DeveloperVerificationStatus.Builder().setVerified(true).build();
+                int verificationFlags = session.getVerificationFlags();
+                extensionResponse.putString(
+                        "verification-flags", String.valueOf(verificationFlags));
+                session.reportVerificationComplete(status, extensionResponse);
+                Log.i(
+                        TAG, "Reported verification pass with session flags: " + verificationFlags);
                 break;
             case MODE_PASS:
                 // passthrough

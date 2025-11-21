@@ -61,6 +61,7 @@ public class Constants {
     public static final int MODE_CRASH = 7;
     public static final int MODE_LITE = 8;
     public static final int MODE_BYPASS = 9;
+    public static final int MODE_PASS_WITH_VERIFICATION_FLAGS_RESPONSE = 10;
 
     @IntDef(flag = true, prefix = { "MODE_" }, value = {
             MODE_PASS,
@@ -72,7 +73,8 @@ public class Constants {
             MODE_TIMEOUT,
             MODE_CRASH,
             MODE_LITE,
-            MODE_BYPASS
+            MODE_BYPASS,
+            MODE_PASS_WITH_VERIFICATION_FLAGS_RESPONSE
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Mode {}
