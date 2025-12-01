@@ -20,6 +20,7 @@ import static android.content.pm.cts_root.utils.Constants.INSTALLER_PACKAGE_NAME
 import static android.content.pm.cts_root.utils.Constants.MODE_BYPASS;
 import static android.content.pm.cts_root.utils.Constants.MODE_LITE;
 import static android.content.pm.cts_root.utils.Constants.MODE_PASS;
+import static android.content.pm.cts_root.utils.Constants.MODE_PASS_WITH_VERIFICATION_FLAGS_RESPONSE;
 import static android.content.pm.cts_root.utils.Constants.MODE_REJECT_WITH_POLICY_OVERRIDE;
 import static android.content.pm.cts_root.utils.Constants.PRIV_INSTALLER_PACKAGE_NAME;
 
@@ -28,6 +29,7 @@ import static com.google.common.truth.Truth.assertThat;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.Pair;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -171,6 +173,17 @@ public abstract class DeveloperVerificationInstallerTestBase extends DeveloperVe
                         PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE)
                 .setVerifierMode(MODE_REJECT_WITH_POLICY_OVERRIDE)
                 .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
+                .build();
+        installAndVerifyResults(sContext, testParams);
+    }
+
+    @RequiresFlagsEnabled(android.content.pm.Flags.FLAG_VERIFICATION_SERVICE_ADB)
+    @Test
+    public void testDeveloperVerificationSession_getVerificationFlagsMethod() throws Exception {
+        TestParams testParams = getTestParamsBuilder()
+                .setVerifierMode(MODE_PASS_WITH_VERIFICATION_FLAGS_RESPONSE)
+                .setStatusCodeExpected(PackageInstaller.STATUS_SUCCESS)
+                .setExtensionResponseKeyValuePairExpected(new Pair<>("verification-flags", "0"))
                 .build();
         installAndVerifyResults(sContext, testParams);
     }
