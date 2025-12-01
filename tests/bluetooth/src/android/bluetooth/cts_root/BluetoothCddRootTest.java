@@ -76,7 +76,7 @@ public class BluetoothCddRootTest {
                 BLUETOOTH_PRIVILEGED, BLUETOOTH_SCAN, DUMP, PACKAGE_USAGE_STATS);
         assertThat(TestUtils.getAdoptedShellPermissions()).containsAtLeast(BLUETOOTH_CONNECT,
                 BLUETOOTH_PRIVILEGED, BLUETOOTH_SCAN, DUMP, PACKAGE_USAGE_STATS);
-        mAdapter = TestUtils.getBluetoothAdapterOrDie();
+        mAdapter = BlockingBluetoothAdapter.getAdapter();
         if (mAdapter.isEnabled()) {
             assertThat(BlockingBluetoothAdapter.disable(true)).isTrue();
             try {
