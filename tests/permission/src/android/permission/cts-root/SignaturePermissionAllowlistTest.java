@@ -44,7 +44,6 @@ import com.android.xts.root.annotations.RequireAdbRoot;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -77,15 +76,21 @@ public final class SignaturePermissionAllowlistTest {
     @NonNull
     private SigningDetails mNormalAppSigningDetails;
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        assumeTrue(Build.isDebuggable());
-        // We cannot inject into system server in user 0 if we are running in a different user.
-        assumeTrue(UserHandle.myUserId() == UserHandle.USER_SYSTEM);
+    // NOTE: mSupported is redundant as we could check whether mPackageManagerLocal or
+    // mPermissionManagerLocal is non-null, but it's cleaner to use a separate attribute.
+    private boolean mSupported;
+
+    private void assumeSupported() {
+        assumeTrue("Build is not debuggable", Build.isDebuggable());
+        int userId = UserHandle.myUserId();
+        assumeTrue("Cannot inject into system server as it runs on system user and this test is"
+                + "running on user " + userId, userId == UserHandle.USER_SYSTEM);
+        mSupported = true;
     }
 
     @Before
     public void setUp() throws Exception {
+        assumeSupported();
         mPermissionManagerLocal.setSignaturePermissionAllowlistForceEnforced(true);
         installPackage(NORMAL_APP_APK_PATH);
         SigningDetails platformSigningDetails;
@@ -104,6 +109,9 @@ public final class SignaturePermissionAllowlistTest {
 
     @After
     public void tearDown() throws Exception {
+        if (!mSupported) {
+            return;
+        }
         uninstallPackage(NORMAL_APP_PACKAGE_NAME);
         mPackageManagerLocal.removeOverrideSigningDetails(mNormalAppSigningDetails);
         mPermissionManagerLocal.setSignaturePermissionAllowlistForceEnforced(false);
