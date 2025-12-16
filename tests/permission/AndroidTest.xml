@@ -43,11 +43,6 @@
         <option name="teardown-command" value="pm uninstall android.permission.cts_root.permission.bpf.map.app2" />
     </target_preparer>
 
-    <!-- Must switch to system user (not full) otherwise tests that use LocalManagerRegistry would fail. -->
-    <target_preparer class="com.android.tradefed.targetprep.SwitchUserTargetPreparer">
-        <option name="user-type" value="SYSTEM" />
-    </target_preparer>
-
     <test class="com.android.tradefed.testtype.AndroidJUnitTest">
         <option name="package" value="android.permission.cts_root" />
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner" />
