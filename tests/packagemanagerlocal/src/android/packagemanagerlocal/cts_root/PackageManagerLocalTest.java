@@ -19,6 +19,10 @@ package android.packagemanagerlocal.cts_root;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
+import static org.junit.Assume.assumeTrue;
+
+import android.os.UserHandle;
+
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.LocalManagerRegistry;
@@ -42,6 +46,9 @@ public final class PackageManagerLocalTest {
 
     @Before
     public void setup() {
+        int userId = UserHandle.myUserId();
+        assumeTrue("Cannot inject into system server as it runs on system user and this test is"
+                + "running on user " + userId, userId == UserHandle.USER_SYSTEM);
         mPackageManagerLocal = LocalManagerRegistry.getManager(PackageManagerLocal.class);
     }
 
