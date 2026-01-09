@@ -30,6 +30,14 @@
         <option name="cleanup-action" value="REBOOT" />
     </target_preparer>
 
+
+    <target_preparer class="com.android.tradefed.targetprep.SwitchUserTargetPreparer">
+        <!-- Must switch to system user (because this module instruments android / system_server)... -->
+        <option name="user-type" value="SYSTEM" />
+        <!-- ...but it's ok to skip if the device doesn't support switching to it. -->
+        <option name="user-type-mode" value="REQUIRED_ONLY" />
+    </target_preparer>
+
     <test class="com.android.tradefed.testtype.AndroidJUnitTest">
         <option name="package" value="android.packagemanagerlocal.cts_root"/>
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner" />
