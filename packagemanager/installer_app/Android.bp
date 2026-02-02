@@ -26,7 +26,6 @@ java_defaults {
     sdk_version: "current",
     // tag this module as a cts test artifact
     test_suites: [
-        "cts",
         "general-tests",
     ],
     static_libs: [
