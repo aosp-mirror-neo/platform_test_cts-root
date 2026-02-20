@@ -36,7 +36,6 @@ android_test {
     asset_dirs: ["assets"],
     static_libs: [
         "cts-input-lib",
-        "CtsVirtualDeviceCommonLib",
         "android.view.flags-aconfig-java",
         "androidx.test.core",
         "androidx.test.ext.junit",
