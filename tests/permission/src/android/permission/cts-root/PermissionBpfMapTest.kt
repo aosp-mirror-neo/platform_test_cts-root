@@ -18,6 +18,7 @@ package android.permission.cts_root
 
 import android.Manifest
 import android.app.AppOpsManager
+import android.content.pm.PackageManagerInternal
 import android.os.Build
 import android.os.Process
 import android.os.UserHandle
@@ -31,6 +32,8 @@ import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.SystemUtil
 import com.android.server.LocalManagerRegistry
+import com.android.server.LocalServices
+import com.android.server.SystemConfig
 import com.android.server.permission.PermissionBpfMap
 import com.android.server.permission.PermissionManagerLocal
 import com.google.common.truth.Truth.assertThat
@@ -54,6 +57,8 @@ class PermissionBpfMapTest {
 
     private val permissionManagerLocal =
         LocalManagerRegistry.getManager(PermissionManagerLocal::class.java)!!
+    private val packageManagerInternal =
+        LocalServices.getService(PackageManagerInternal::class.java)!!
     private val packageManager = context.packageManager
     private val userManager = context.getSystemService(UserManager::class.java)!!
     private val appOpsManager = context.getSystemService(AppOpsManager::class.java)!!
@@ -212,13 +217,18 @@ class PermissionBpfMapTest {
                 testPermissionBpfMap.uidsPermissionBitsArray,
                 SUPPORTED_BPF_PERMISSIONS,
             )
+            assertSystemConfigUids(
+                context.userId,
+                testPermissionBpfMap.uidsPermissionBitsArray,
+                SUPPORTED_BPF_PERMISSIONS,
+            )
         } finally {
             permissionManagerLocal.unregisterBpfMap(testPermissionBpfMap)
         }
     }
 
     @Test
-    fun addingUser_triggers_setUidsPermissionBitsCallback_withRootAndSystemUid() {
+    fun addingUser_triggers_setUidsPermissionBitsCallback() {
         val testPermissionBpfMap = TestPermissionBpfMap(mutableListOf(), CountDownLatch(1))
 
         var userId = -1
@@ -238,6 +248,11 @@ class PermissionBpfMapTest {
                 .isGreaterThan(1)
 
             assertRootAndSystemUid(
+                userId,
+                testPermissionBpfMap.uidsPermissionBitsArray,
+                SUPPORTED_BPF_PERMISSIONS,
+            )
+            assertSystemConfigUids(
                 userId,
                 testPermissionBpfMap.uidsPermissionBitsArray,
                 SUPPORTED_BPF_PERMISSIONS,
@@ -262,6 +277,34 @@ class PermissionBpfMapTest {
         assertThat(uidsPermissionBitsArray.indexOfKey(systemUid) >= 0).isTrue()
         assertThat(uidsPermissionBitsArray.get(systemUid))
             .isEqualTo(getAllGrantedPermissionsBits(permissionNames))
+    }
+
+    private fun assertSystemConfigUids(
+        userId: Int,
+        uidsPermissionBitsArray: SparseIntArray,
+        permissionNames: List<String>,
+    ) {
+        val systemPermissions = SystemConfig.getInstance().systemPermissions
+        for (i in 0 until systemPermissions.size()) {
+            val appId = systemPermissions.keyAt(i)
+            val targetUid = UserHandle.getUid(userId, appId)
+            if (packageManagerInternal.getPackage(targetUid) != null) {
+                continue
+            }
+
+            val actualBits = uidsPermissionBitsArray.get(targetUid, 0)
+            permissionNames.forEachIndexed { index, permissionName ->
+                val shouldBeGranted = permissionName in systemPermissions.valueAt(i)
+                val isBitSet = (actualBits and (1 shl index)) != 0
+                val expectedState = if (shouldBeGranted) "set" else "unset"
+                assertWithMessage(
+                        "Permission $permissionName should be $expectedState for UID $targetUid" +
+                            " (appId=$appId)"
+                    )
+                    .that(isBitSet)
+                    .isEqualTo(shouldBeGranted)
+            }
+        }
     }
 
     @Test
