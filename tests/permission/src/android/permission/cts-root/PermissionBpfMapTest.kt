@@ -463,6 +463,56 @@ class PermissionBpfMapTest {
         }
     }
 
+    @Test
+    fun grantingFullerPermission_updatesBpfMapForBasePermission() {
+        val testPermissionBpfMap = TestPermissionBpfMap(mutableListOf(), CountDownLatch(1))
+        // INTERACT_ACROSS_USERS_FULL happens to be a role permission and we can grant it as we
+        // are in system server process itself.
+        packageManager.grantRuntimePermission(
+            TEST_APP_PACKAGE_1,
+            PERMISSION_INTERACT_ACROSS_USERS_FULL,
+            context.user
+        )
+
+        try {
+            permissionManagerLocal.registerBpfMap(
+                testPermissionBpfMap,
+                SUPPORTED_BPF_FULLER_AND_BASE_PERMISSIONS
+            )
+            awaitLatch(testPermissionBpfMap.latch)
+
+            SUPPORTED_BPF_FULLER_AND_BASE_PERMISSIONS.forEachIndexed { index, permission ->
+                assertWithMessage(
+                    "$permission at bit $index should be set after granting fuller permission"
+                )
+                    .that(isPermissionBitSet(testPermissionBpfMap, testApp1Uid, index))
+                    .isTrue()
+            }
+
+            testPermissionBpfMap.latch = CountDownLatch(1)
+            packageManager.revokeRuntimePermission(
+                TEST_APP_PACKAGE_1,
+                PERMISSION_INTERACT_ACROSS_USERS_FULL,
+                context.user
+            )
+            awaitLatch(testPermissionBpfMap.latch)
+
+            SUPPORTED_BPF_FULLER_AND_BASE_PERMISSIONS.forEachIndexed { index, permission ->
+                assertWithMessage(
+                    "$permission at bit $index should be unset after revoking fuller permission"
+                )
+                    .that(isPermissionBitSet(testPermissionBpfMap, testApp1Uid, index))
+                    .isFalse()
+            }
+        } finally {
+            permissionManagerLocal.unregisterBpfMap(testPermissionBpfMap)
+            uiAutomation.revokeRuntimePermission(
+                TEST_APP_PACKAGE_1,
+                PERMISSION_INTERACT_ACROSS_USERS_FULL
+            )
+        }
+    }
+
     companion object {
         private const val TEST_APP_PACKAGE_1 = "android.permission.cts_root.permission.bpf.map.app1"
         private const val TEST_APP_PACKAGE_2 = "android.permission.cts_root.permission.bpf.map.app2"
@@ -477,11 +527,20 @@ class PermissionBpfMapTest {
         private const val PERMISSION_ACCESS_LOCAL_NETWORK = Manifest.permission.ACCESS_LOCAL_NETWORK
         private const val PERMISSION_UPDATE_DEVICE_STATS = Manifest.permission.UPDATE_DEVICE_STATS
         private const val PERMISSION_INTERNET = Manifest.permission.INTERNET
+        private const val PERMISSION_INTERACT_ACROSS_USERS =
+            Manifest.permission.INTERACT_ACROSS_USERS
+        private const val PERMISSION_INTERACT_ACROSS_USERS_FULL =
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL
         private val SUPPORTED_BPF_PERMISSIONS =
             listOf(
                 PERMISSION_ACCESS_LOCAL_NETWORK,
                 PERMISSION_UPDATE_DEVICE_STATS,
                 PERMISSION_INTERNET,
+            )
+        private val SUPPORTED_BPF_FULLER_AND_BASE_PERMISSIONS =
+            listOf(
+                PERMISSION_INTERACT_ACROSS_USERS,
+                PERMISSION_INTERACT_ACROSS_USERS_FULL
             )
     }
 }
