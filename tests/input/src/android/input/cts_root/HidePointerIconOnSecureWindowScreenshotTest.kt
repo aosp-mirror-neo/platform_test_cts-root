@@ -21,7 +21,6 @@ import android.graphics.Color
 import android.os.SystemProperties
 import android.view.MotionEvent
 import android.view.WindowManager
-import android.virtualdevice.cts.common.VirtualDeviceRule
 import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.cts.input.BlockingQueueEventVerifier
@@ -70,13 +69,9 @@ class HidePointerIconOnSecureWindowScreenshotTest {
     @get:Rule
     val testName = TestName()
     @get:Rule
-    val virtualDeviceRule = VirtualDeviceRule.createDefault()!!
-    // TODO(b/366492484): Remove reliance on VDM.
-    @get:Rule
     val virtualDisplayRule = VirtualDisplayActivityScenario.Rule<CaptureEventActivity>(
         testName,
-        useSecureDisplay = true,
-        virtualDeviceRule = virtualDeviceRule
+        useSecureDisplay = true
     )
     @get:Rule
     val defaultPointerSpeedRule = DefaultPointerSpeedRule()
@@ -101,7 +96,6 @@ class HidePointerIconOnSecureWindowScreenshotTest {
         }
 
         device.setUp(
-            virtualDeviceRule.defaultVirtualDevice,
             virtualDisplayRule.virtualDisplay.display,
         )
 
