@@ -33,3 +33,9 @@ android_test_helper_app {
     defaults: ["CtsRootPermissionBpfMapAppDefaults"],
     manifest: "AndroidManifest2.xml",
 }
+
+android_test_helper_app {
+    name: "CtsRootPermissionBpfMapAppInstant",
+    defaults: ["CtsRootPermissionBpfMapAppDefaults"],
+    manifest: "AndroidManifestInstant.xml",
+}

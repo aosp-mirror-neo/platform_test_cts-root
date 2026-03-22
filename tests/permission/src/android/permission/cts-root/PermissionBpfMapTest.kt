@@ -65,6 +65,7 @@ class PermissionBpfMapTest {
 
     private var testApp1Uid: Int = -1
     private var testApp2Uid: Int = -1
+    private var testAppInstantUid: Int = -1
 
     private class TestPermissionBpfMap(
         private val callbackInvocations: MutableList<String>,
@@ -120,6 +121,8 @@ class PermissionBpfMapTest {
     fun setup() {
         testApp1Uid = packageManager.getPackageInfo(TEST_APP_PACKAGE_1, 0).applicationInfo!!.uid
         testApp2Uid = packageManager.getPackageInfo(TEST_APP_PACKAGE_2, 0).applicationInfo!!.uid
+        testAppInstantUid =
+            packageManager.getPackageInfo(TEST_APP_PACKAGE_INSTANT, 0).applicationInfo!!.uid
     }
 
     @Test
@@ -513,9 +516,35 @@ class PermissionBpfMapTest {
         }
     }
 
+    @Test
+    fun registerBpfMap_deniesNonInstantPermissionForInstantApp() {
+        val testPermissionBpfMap = TestPermissionBpfMap(mutableListOf(), CountDownLatch(1))
+        val permissionsUnderTest = listOf(INSTANT_APP_PERMISSION, NON_INSTANT_APP_PERMISSION)
+        permissionManagerLocal.registerBpfMap(testPermissionBpfMap, permissionsUnderTest)
+        try {
+            awaitLatch(testPermissionBpfMap.latch)
+
+            permissionsUnderTest.forEachIndexed { index, permission ->
+                if (permission == INSTANT_APP_PERMISSION) {
+                    assertWithMessage("$permission at bit $index should be set for instant app")
+                        .that(isPermissionBitSet(testPermissionBpfMap, testAppInstantUid, index))
+                        .isTrue()
+                } else {
+                    assertWithMessage("$permission at bit $index should be unset for instant app")
+                        .that(isPermissionBitSet(testPermissionBpfMap, testAppInstantUid, index))
+                        .isFalse()
+                }
+            }
+        } finally {
+            permissionManagerLocal.unregisterBpfMap(testPermissionBpfMap)
+        }
+    }
+
     companion object {
         private const val TEST_APP_PACKAGE_1 = "android.permission.cts_root.permission.bpf.map.app1"
         private const val TEST_APP_PACKAGE_2 = "android.permission.cts_root.permission.bpf.map.app2"
+        private const val TEST_APP_PACKAGE_INSTANT =
+            "android.permission.cts_root.permission.bpf.map.instant"
         private const val TEST_APP_APK_1 =
             "/data/local/tmp/cts-root-permission/CtsRootPermissionBpfMapApp1.apk"
 
@@ -531,6 +560,10 @@ class PermissionBpfMapTest {
             Manifest.permission.INTERACT_ACROSS_USERS
         private const val PERMISSION_INTERACT_ACROSS_USERS_FULL =
             Manifest.permission.INTERACT_ACROSS_USERS_FULL
+
+        private const val INSTANT_APP_PERMISSION = PERMISSION_INTERNET
+        private const val NON_INSTANT_APP_PERMISSION = Manifest.permission.USE_LOOPBACK_INTERFACE
+
         private val SUPPORTED_BPF_PERMISSIONS =
             listOf(
                 PERMISSION_ACCESS_LOCAL_NETWORK,

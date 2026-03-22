@@ -24,6 +24,7 @@ android_test {
         ":CtsRootPermissionSignaturePermissionAllowlistNormalApp",
         ":CtsRootPermissionBpfMapApp1",
         ":CtsRootPermissionBpfMapApp2",
+        ":CtsRootPermissionBpfMapAppInstant",
     ],
     libs: [
         "android.test.runner.stubs.system",

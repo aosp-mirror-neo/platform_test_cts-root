@@ -28,6 +28,7 @@
         <option name="push-file" key="CtsRootPermissionSignaturePermissionAllowlistNormalApp.apk" value="/data/local/tmp/cts-root-permission/CtsRootPermissionSignaturePermissionAllowlistNormalApp.apk" />
         <option name="push-file" key="CtsRootPermissionBpfMapApp1.apk" value="/data/local/tmp/cts-root-permission/CtsRootPermissionBpfMapApp1.apk" />
         <option name="push-file" key="CtsRootPermissionBpfMapApp2.apk" value="/data/local/tmp/cts-root-permission/CtsRootPermissionBpfMapApp2.apk" />
+        <option name="push-file" key="CtsRootPermissionBpfMapAppInstant.apk" value="/data/local/tmp/cts-root-permission/CtsRootPermissionBpfMapAppInstant.apk" />
         <option name="cleanup" value="true" />
     </target_preparer>
 
@@ -39,8 +40,10 @@
     <target_preparer class="com.android.tradefed.targetprep.RunCommandTargetPreparer">
         <option name="run-command" value="pm install /data/local/tmp/cts-root-permission/CtsRootPermissionBpfMapApp1.apk" />
         <option name="run-command" value="pm install /data/local/tmp/cts-root-permission/CtsRootPermissionBpfMapApp2.apk" />
+        <option name="run-command" value="pm install --instant /data/local/tmp/cts-root-permission/CtsRootPermissionBpfMapAppInstant.apk" />
         <option name="teardown-command" value="pm uninstall android.permission.cts_root.permission.bpf.map.app1" />
         <option name="teardown-command" value="pm uninstall android.permission.cts_root.permission.bpf.map.app2" />
+        <option name="teardown-command" value="pm uninstall android.permission.cts_root.permission.bpf.map.instant" />
     </target_preparer>
 
     <test class="com.android.tradefed.testtype.AndroidJUnitTest">
