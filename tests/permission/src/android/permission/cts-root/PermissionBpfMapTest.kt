@@ -160,7 +160,8 @@ class PermissionBpfMapTest {
 
         var userId = -1
         try {
-            val userInfo = userManager.createUser("TestUser", UserManager.USER_TYPE_FULL_GUEST, 0)!!
+            val userInfo =
+                userManager.createUser("TestUser", UserManager.USER_TYPE_FULL_SECONDARY, 0)!!
             userId = userInfo.userHandle.identifier
 
             permissionManagerLocal.registerBpfMap(testPermissionBpfMap, SUPPORTED_BPF_PERMISSIONS)
@@ -241,7 +242,8 @@ class PermissionBpfMapTest {
 
             testPermissionBpfMap.latch = CountDownLatch(1)
 
-            val userInfo = userManager.createUser("TestUser", UserManager.USER_TYPE_FULL_GUEST, 0)!!
+            val userInfo =
+                userManager.createUser("TestUser", UserManager.USER_TYPE_FULL_SECONDARY, 0)!!
             userId = userInfo.userHandle.identifier
 
             awaitLatch(testPermissionBpfMap.latch)
