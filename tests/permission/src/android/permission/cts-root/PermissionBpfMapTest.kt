@@ -41,6 +41,7 @@ import com.google.common.truth.Truth.assertWithMessage
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertThrows
+import org.junit.Assume.assumeNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -161,8 +162,9 @@ class PermissionBpfMapTest {
         var userId = -1
         try {
             val userInfo =
-                userManager.createUser("TestUser", UserManager.USER_TYPE_FULL_SECONDARY, 0)!!
-            userId = userInfo.userHandle.identifier
+                userManager.createUser("TestUser", UserManager.USER_TYPE_FULL_SECONDARY, 0)
+            assumeNotNull(userInfo, "The required user creation failed, skipping test")
+            userId = userInfo!!.userHandle.identifier
 
             permissionManagerLocal.registerBpfMap(testPermissionBpfMap, SUPPORTED_BPF_PERMISSIONS)
             awaitLatch(testPermissionBpfMap.latch)
@@ -175,7 +177,9 @@ class PermissionBpfMapTest {
             assertThat(testPermissionBpfMap.removedUserId).isEqualTo(userId)
         } finally {
             permissionManagerLocal.unregisterBpfMap(testPermissionBpfMap)
-            userManager.removeUser(userId)
+            if (userId != -1) {
+                userManager.removeUser(userId)
+            }
         }
     }
 
@@ -243,8 +247,9 @@ class PermissionBpfMapTest {
             testPermissionBpfMap.latch = CountDownLatch(1)
 
             val userInfo =
-                userManager.createUser("TestUser", UserManager.USER_TYPE_FULL_SECONDARY, 0)!!
-            userId = userInfo.userHandle.identifier
+                userManager.createUser("TestUser", UserManager.USER_TYPE_FULL_SECONDARY, 0)
+            assumeNotNull(userInfo, "The required user creation failed, skipping test")
+            userId = userInfo!!.userHandle.identifier
 
             awaitLatch(testPermissionBpfMap.latch)
 
@@ -264,7 +269,9 @@ class PermissionBpfMapTest {
             )
         } finally {
             permissionManagerLocal.unregisterBpfMap(testPermissionBpfMap)
-            userManager.removeUser(userId)
+            if (userId != -1) {
+                userManager.removeUser(userId)
+            }
         }
     }
 
